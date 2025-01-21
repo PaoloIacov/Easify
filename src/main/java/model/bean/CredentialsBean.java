@@ -5,11 +5,13 @@ import java.io.Serializable;
 public class CredentialsBean implements Serializable {
 
     private String username;
+    private String password;
 
     public CredentialsBean() {}
 
-    public CredentialsBean(String username) {
+    public CredentialsBean(String username, String password) {
         this.username = username;
+        this.password = password;
     }
 
     public String getUsername() {
@@ -18,6 +20,14 @@ public class CredentialsBean implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }
