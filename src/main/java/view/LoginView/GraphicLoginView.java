@@ -26,7 +26,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
 
         // Pannello principale con layout e sfondo
         JPanel mainPanel = new JPanel() {
-            private final transient Image backgroundImage = loadBackgroundImage("background.jpg");
+            private final transient Image backgroundImage = loadBackgroundImage();
 
             @Override
             protected void paintComponent(Graphics g) {
@@ -41,7 +41,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
         mainPanel.setOpaque(false);
 
         // Icona utente
-        addUserIcon(mainPanel, "userIcon.png");
+        addUserIcon(mainPanel);
 
         // Campo username
         usernameField = createTextField(localizationManager.getText("login.username"));
@@ -68,7 +68,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
     }
 
     private void addUserIcon(JPanel panel) {
-        ImageIcon icon = createImageIcon("userIcon.jpg");
+        ImageIcon icon = createImageIcon("userIcon.png");
         if (icon != null) {
             Image scaledIcon = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
             JLabel userIcon = new JLabel(new ImageIcon(scaledIcon));
