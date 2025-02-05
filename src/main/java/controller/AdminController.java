@@ -11,7 +11,6 @@ import view.AdminView.AdminView;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AdminController implements ActionHandler {
 
@@ -86,7 +85,7 @@ public class AdminController implements ActionHandler {
     private void displayAllUsers() {
         try {
             List<User> users = userDAO.getAllUsers();
-            List<UserBean> userBeans = users.stream().map(this::convertToUserBean).collect(Collectors.toList());
+            List<UserBean> userBeans = users.stream().map(this::convertToUserBean).toList();
             adminView.displayAllUsers(userBeans);
         } catch (Exception e) {
             adminView.showError("Failed to fetch users: " + e.getMessage());

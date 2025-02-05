@@ -30,14 +30,16 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     private void initializeUI() {
         setTitle(localizationManager.getText("conversation.view.title"));
         setSize(1000, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        JPanel leftPanel = createLeftPanel();
-        JPanel rightPanel = createRightPanel();
+         leftPanel = createLeftPanel();
+         rightPanel = createRightPanel();
 
+        assert leftPanel != null;
         add(leftPanel, BorderLayout.WEST);
+        assert rightPanel != null;
         add(rightPanel, BorderLayout.CENTER);
         setVisible(true);
     }

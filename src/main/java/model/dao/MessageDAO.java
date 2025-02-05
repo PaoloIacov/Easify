@@ -29,7 +29,9 @@ public class MessageDAO{
 
     public List<Message> getMessagesByConversationID(Long conversationID) {
         List<Message> messages = new ArrayList<>();
-        String query = "SELECT * FROM Message WHERE conversationID = ? ORDER BY datetime ";
+
+       String query = "SELECT ID, conversationID, senderUsername, content, datetime " +
+               "FROM Message WHERE conversationID = ? ORDER BY datetime";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setLong(1, conversationID);

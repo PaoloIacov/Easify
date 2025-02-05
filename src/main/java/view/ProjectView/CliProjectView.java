@@ -12,6 +12,8 @@ public class CliProjectView implements ProjectView {
     private final LocalizationManager localizationManager;
     private final Scanner scanner;
     private List<ProjectBean> projectList;
+    private static final String PROJECT_LIST_EMPTY = "project.list.empty";
+    private static final String INVALID_SELECTION = "error.invalid.selection";
 
     public CliProjectView(LocalizationManager localizationManager) {
         this.localizationManager = localizationManager;
@@ -57,7 +59,7 @@ public class CliProjectView implements ProjectView {
         System.out.println("\n" + localizationManager.getText("project.list.title"));
 
         if (projects.isEmpty()) {
-            System.out.println(localizationManager.getText("project.list.empty"));
+            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
         } else {
             int index = 1;
             for (ProjectBean project : projects) {
@@ -123,7 +125,7 @@ public class CliProjectView implements ProjectView {
     @Override
     public String getSelectedProjectName() {
         if (projectList.isEmpty()) {
-            System.out.println(localizationManager.getText("project.list.empty"));
+            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
             return null;
         }
 
@@ -131,14 +133,14 @@ public class CliProjectView implements ProjectView {
         try {
             int selectedIndex = Integer.parseInt(scanner.nextLine().trim());
             if (selectedIndex < 1 || selectedIndex > projectList.size()) {
-                System.out.println(localizationManager.getText("error.invalid.selection"));
+                System.out.println(localizationManager.getText(INVALID_SELECTION));
                 return null;
             }
 
             return projectList.get(selectedIndex - 1).getName();
 
         } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText("error.invalid.selection"));
+            System.out.println(localizationManager.getText(INVALID_SELECTION));
             return null;
         }
     }
@@ -147,7 +149,7 @@ public class CliProjectView implements ProjectView {
     @Override
     public String getSelectedProjectDescription() {
         if (projectList.isEmpty()) {
-            System.out.println(localizationManager.getText("project.list.empty"));
+            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
             return null;
         }
 
@@ -155,11 +157,11 @@ public class CliProjectView implements ProjectView {
         try {
             choice = Integer.parseInt(scanner.nextLine().trim());
             if (choice < 1 || choice > projectList.size()) {
-                System.out.println(localizationManager.getText("error.invalid.selection"));
+                System.out.println(localizationManager.getText(INVALID_SELECTION));
                 return null;
             }
         } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText("error.invalid.selection"));
+            System.out.println(localizationManager.getText(INVALID_SELECTION));
             return null;
         }
 

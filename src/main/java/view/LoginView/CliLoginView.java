@@ -4,17 +4,15 @@ import controller.exceptions.LoginExceptions.LoginException;
 import model.bean.CredentialsBean;
 import model.localization.LocalizationManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.Scanner;
 
 public class CliLoginView implements LoginView {
 
-    private final BufferedReader reader;
+    private final Scanner scanner;
     private final LocalizationManager localizationManager;
 
     public CliLoginView(LocalizationManager localizationManager) {
-        this.reader = new BufferedReader(new InputStreamReader(System.in));
+        this.scanner = new Scanner(System.in);
         this.localizationManager = localizationManager;
     }
 
@@ -22,19 +20,15 @@ public class CliLoginView implements LoginView {
     public CredentialsBean getCredentialsInput() throws LoginException {
         try {
             System.out.print(localizationManager.getText("login.username") + ": ");
-            String username = reader.readLine();
+            String username = scanner.nextLine();
             System.out.print(localizationManager.getText("login.password") + ": ");
-            String password = reader.readLine();
+            String password = scanner.nextLine();
             return new CredentialsBean(username, password);
-        } catch (IOException e) {
-           throw new LoginException(localizationManager.getText("error.input.read"), e) {
-           };
         } catch (NumberFormatException e) {
             throw new LoginException(localizationManager.getText("error.invalid.role")) {
             };
         }
     }
-
 
     public void showSuccess() {
         System.out.println(localizationManager.getText("login.success"));
@@ -53,9 +47,9 @@ public class CliLoginView implements LoginView {
     @Override
     public void close() {
         try {
-            reader.close();
-        } catch (IOException e) {
-            System.err.println(localizationManager.getText("generic.error"));
+            scanner.close();
+        } catch (Exception e) {
+            System.out.println(localizationManager.getText("login.close"));
         }
     }
 
@@ -72,12 +66,8 @@ public class CliLoginView implements LoginView {
     @Override
     public String getInput(String promptKey) {
         System.out.print(localizationManager.getText(promptKey) + ": ");
-        try {
-            return reader.readLine();
-        } catch (IOException e) {
-            throw new RuntimeException(localizationManager.getText("error.input.read"), e) {
-            };
-        }
+         return scanner.nextLine();
+
     }
 
     @Override

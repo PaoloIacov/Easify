@@ -26,7 +26,7 @@ public class GraphicAdminView extends JFrame implements AdminView {
     private void initializeUI() {
         setTitle(localizationManager.getText("admin.menu.title"));
         setSize(1000, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 

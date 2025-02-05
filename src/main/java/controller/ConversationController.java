@@ -19,7 +19,6 @@ import view.ConversationView.DecoratedConversationView.GraphicPmConversationView
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ConversationController implements ActionHandler {
 
@@ -31,6 +30,8 @@ public class ConversationController implements ActionHandler {
     private final CredentialsBean loggedInUser;
     private final ApplicationController applicationController;
     private String currentProjectName;
+    private static final String LOADING_ERROR = "conversation.error.loading";
+    private static final String CONVO_NO_SELECTED = "conversation.no.selected";
 
     public ConversationController(ConversationView conversationView, ConversationDAO conversationDAO, MessageDAO messageDAO, LocalizationManager localizationManager, CredentialsBean loggedInUser, ApplicationController applicationController) {
         this.conversationView = conversationView;
@@ -68,7 +69,7 @@ public class ConversationController implements ActionHandler {
                 }
                 running = handleAction(choice);
             } catch (Exception e) {
-                conversationView.showError("conversation.error.loading");
+                conversationView.showError(LOADING_ERROR);
             }
         }
     }
@@ -103,7 +104,7 @@ public class ConversationController implements ActionHandler {
                     return false;
             }
         } catch (Exception e) {
-            conversationView.showError(localizationManager.getText("conversation.error.loading") + ": " + e.getMessage());
+            conversationView.showError(localizationManager.getText(LOADING_ERROR) + ": " + e.getMessage());
         }
         return true;
     }
@@ -112,18 +113,18 @@ public class ConversationController implements ActionHandler {
         try {
             selectedConversation = conversationView.getSelectedConversation();
             if (selectedConversation == null) {
-                conversationView.showError(localizationManager.getText("conversation.no.selected"));
+                conversationView.showError(CONVO_NO_SELECTED);
                 return;
             }
 
             List<MessageBean> messages = messageDAO.getMessagesByConversationID(selectedConversation.getConversationID())
                     .stream()
                     .map(MessageConverter::toBean)
-                    .collect(Collectors.toList());
+                    .toList();
 
             conversationView.displayMessages(messages);
         } catch (Exception e) {
-            conversationView.showError(localizationManager.getText("conversation.error.loading") + ": " + e.getMessage());
+            conversationView.showError(localizationManager.getText(LOADING_ERROR) + ": " + e.getMessage());
         }
     }
 
@@ -131,7 +132,7 @@ public class ConversationController implements ActionHandler {
         try {
             selectedConversation = conversationView.getSelectedConversation();
             if (selectedConversation == null) {
-                conversationView.showError(localizationManager.getText("conversation.no.selected"));
+                conversationView.showError(CONVO_NO_SELECTED);
                 return;
             }
 
@@ -178,7 +179,7 @@ public class ConversationController implements ActionHandler {
             }
             conversationView.displayConversations(conversations);
         } catch (Exception e) {
-            conversationView.showError(localizationManager.getText("conversation.error.loading") + ": " + e.getMessage());
+            conversationView.showError(localizationManager.getText(LOADING_ERROR) + ": " + e.getMessage());
         }
     }
 
@@ -197,7 +198,7 @@ public class ConversationController implements ActionHandler {
             List<ConversationBean> updatedConversations = conversationDAO.getConversationsForProject(currentProjectName)
                     .stream()
                     .map(ConversationConverter::toBean)
-                    .collect(Collectors.toList());
+                    .toList();
             conversationView.displayConversations(updatedConversations);
 
         } catch (Exception e) {
@@ -261,10 +262,10 @@ public class ConversationController implements ActionHandler {
             List<ConversationBean> conversations = conversationDAO.getConversationsForProject(projectName)
                     .stream()
                     .map(ConversationConverter::toBean)
-                    .collect(Collectors.toList());
+                    .toList();
             conversationView.displayConversations(conversations);
         } catch (SQLException e) {
-            conversationView.showError(localizationManager.getText("conversation.error.loading") + ": " + e.getMessage());
+            conversationView.showError(localizationManager.getText(LOADING_ERROR) + ": " + e.getMessage());
         }
     }
 
@@ -282,13 +283,13 @@ public class ConversationController implements ActionHandler {
                 return;
             }
 
-            ConversationBean selectedConversation = conversationView.getSelectedConversation();
-            if (selectedConversation == null) {
-                conversationView.showError(localizationManager.getText("conversation.no.selected"));
+            ConversationBean convo = conversationView.getSelectedConversation();
+            if (convo == null) {
+                conversationView.showError(CONVO_NO_SELECTED);
                 return;
             }
 
-            List<User> users = conversationDAO.getUsersNotInConversation(selectedConversation.getConversationID());
+            List<User> users = conversationDAO.getUsersNotInConversation(convo.getConversationID());
             List<String> usernames = users.stream().map(User::getUsername).toList();
 
             if (usernames.isEmpty()) {
@@ -296,7 +297,6 @@ public class ConversationController implements ActionHandler {
                 return;
             }
 
-            // Usa il metodo corretto del Decorator
             String selectedUser = (conversationView instanceof CliPmConversationViewDecorator cliPmView)
                     ? cliPmView.showAddUserDialog(usernames)
                     : ((GraphicPmConversationViewDecorator) conversationView).showAddUserDialog(usernames);
@@ -309,7 +309,7 @@ public class ConversationController implements ActionHandler {
             conversationView.showSuccess(localizationManager.getText("conversation.add.user.success"));
 
         } catch (Exception e) {
-            conversationView.showError(localizationManager.getText("conversation.add.user.error") + ": " + e.getMessage());
+            conversationView.showError("conversation.add.user.error");
         }
     }
 
@@ -322,17 +322,17 @@ public class ConversationController implements ActionHandler {
                 return;
             }
 
-            ConversationBean selectedConversation = conversationView.getSelectedConversation();
-            if (selectedConversation == null) {
-                conversationView.showError(localizationManager.getText("conversation.no.selected"));
+            ConversationBean convo = conversationView.getSelectedConversation();
+            if (convo == null) {
+                conversationView.showError(CONVO_NO_SELECTED);
                 return;
             }
 
-            List<User> users = conversationDAO.getUsersInConversation(selectedConversation.getConversationID());
+            List<User> users = conversationDAO.getUsersInConversation(convo.getConversationID());
             List<String> usernames = users.stream().map(User::getUsername).toList();
 
             if (usernames.isEmpty()) {
-                conversationView.showError(localizationManager.getText("conversation.remove.user.empty"));
+                conversationView.showError("conversation.remove.user.empty");
                 return;
             }
 

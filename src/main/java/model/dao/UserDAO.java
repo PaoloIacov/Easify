@@ -71,7 +71,7 @@ public class UserDAO {
     }
 
     public boolean isUserInProject(String projectName, String username) throws SQLException {
-        String query = "SELECT * FROM ProjectAssignments WHERE username = ? AND projectName = ?";
+        String query = "SELECT username, projectName FROM ProjectAssignments WHERE username = ? AND projectName = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, username);
             statement.setString(2, projectName);

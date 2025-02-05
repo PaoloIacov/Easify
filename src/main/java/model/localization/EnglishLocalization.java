@@ -82,7 +82,6 @@ public class EnglishLocalization implements Localization {
 
         // Project
         translations.put("project.view.title", "Project View");
-        translations.put("project.add.prompt.name", "Enter the project name:");
         translations.put("project.add.prompt.description", "Enter the project description:");
         translations.put("project.add.success", "Project added successfully.");
         translations.put("project.delete.prompt.name", "Enter the project name to delete:");
@@ -104,11 +103,10 @@ public class EnglishLocalization implements Localization {
         translations.put("project.menu.admin.options","5. Create new project\n6. Delete project");
         translations.put("project.menu.prompt", "Enter your choice:");
         translations.put("project.option.invalid", "Invalid option. Please try again.");
-        translations.put("project.add.user.prompt.project", "Enter the project name:");
+        translations.put("project.name.prompt", "Enter the project name:");
         translations.put("project.add.user.prompt.username", "Enter the username to add:");
         translations.put("project.add.user.success", "User added to project successfully.");
         translations.put("project.add.user.error", "Failed to add user to project");
-        translations.put("project.remove.user.prompt.project", "Enter the project name:");
         translations.put("project.remove.user.success", "User removed from project successfully.");
         translations.put("project.remove.user.error", "Failed to remove user from project");
         translations.put("project.details.prompt", "Enter the project name to view details:");
@@ -128,7 +126,6 @@ public class EnglishLocalization implements Localization {
         // Admin Project
         translations.put("admin.options", "Admin Options:");
         translations.put("admin.add.project", "Add Project");
-        translations.put("admin.add.project.prompt", "Enter the project name:");
         translations.put("admin.remove.project", "Delete Project");
         translations.put("admin.option.prompt", "Enter your choice:");
         translations.put("admin.option.invalid", "Invalid option. Please try again.");

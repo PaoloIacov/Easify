@@ -24,7 +24,7 @@ public class ApplicationController {
     private final LocalizationManager localizationManager;
     private final Stack<View> viewStack = new Stack<>();
     private String currentInterface = "CLI";
-
+    private static final String GRAPHIC = "Graphic";
     public ApplicationController(Connection connection, LocalizationManager localizationManager) {
         this.connection = connection;
         this.localizationManager = localizationManager;
@@ -47,7 +47,7 @@ public class ApplicationController {
 
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> { currentInterface = "Graphic"; validChoice = true; }
+                case "1" -> { currentInterface = GRAPHIC; validChoice = true; }
                 case "2" -> { currentInterface = "CLI"; validChoice = true; }
                 default -> System.out.println(localizationManager.getText("interface.invalid"));
             }
@@ -99,7 +99,7 @@ public class ApplicationController {
     public void navigateToProject(CredentialsBean loggedInUser) {
         ProjectView projectView;
 
-        if (currentInterface.equals("Graphic")) {
+        if (currentInterface.equals(GRAPHIC)) {
             projectView = loggedInUser.getRole() == 3
                     ? new GraphicAdminProjectViewDecorator(new GraphicProjectView(localizationManager), localizationManager)
                     : new GraphicProjectView(localizationManager);
@@ -126,7 +126,7 @@ public class ApplicationController {
     public void navigateToConversation(CredentialsBean loggedInUser, String projectName) {
         ConversationView conversationView;
 
-        if (currentInterface.equals("Graphic")) {
+        if (currentInterface.equals(GRAPHIC)) {
             conversationView = projectName != null
                     ? new GraphicPmConversationViewDecorator(new GraphicConversationView(localizationManager), localizationManager)
                     : new GraphicConversationView(localizationManager);
@@ -159,13 +159,13 @@ public class ApplicationController {
     }
 
     private LoginView createLoginView() {
-        return currentInterface.equals("Graphic")
+        return currentInterface.equals(GRAPHIC)
                 ? new GraphicLoginView(localizationManager)
                 : new CliLoginView(localizationManager);
     }
 
     private AdminView createAdminView() {
-        return currentInterface.equals("Graphic")
+        return currentInterface.equals(GRAPHIC)
                 ? new GraphicAdminView(localizationManager)
                 : new CliAdminView(localizationManager);
     }

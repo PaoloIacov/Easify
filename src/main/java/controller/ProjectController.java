@@ -17,7 +17,6 @@ import view.ProjectView.ProjectView;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProjectController implements ActionHandler {
 
@@ -27,6 +26,7 @@ public class ProjectController implements ActionHandler {
     private final ApplicationController applicationController;
     private final CredentialsBean loggedInUser;
     private final UserDAO userDAO;
+    private static final String GENERIC_ERROR = "error.generic";
 
     public ProjectController(ProjectView projectView, ProjectDAO projectDAO, LocalizationManager localizationManager, ApplicationController applicationController, CredentialsBean loggedInUser, UserDAO userDAO) {
         this.projectView = projectView;
@@ -88,7 +88,7 @@ public class ProjectController implements ActionHandler {
                     projectView.showError(localizationManager.getText("error.invalid.option"));
             }
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("error.generic") + ": " + e.getMessage());
+            projectView.showError(GENERIC_ERROR);
         }
         return true;
     }
@@ -116,7 +116,7 @@ public class ProjectController implements ActionHandler {
             } catch (NumberFormatException e) {
                 projectView.showError(localizationManager.getText("error.invalid.option"));
             } catch (Exception e) {
-                projectView.showError(localizationManager.getText("error.generic") + ": " + e.getMessage());
+                projectView.showError(GENERIC_ERROR);
             }
         }
     }
@@ -126,7 +126,7 @@ public class ProjectController implements ActionHandler {
         try {
             List<ProjectBean> projects = projectDAO.getProjectsForUser(username).stream()
                     .map(ProjectConverter::toBean)
-                    .collect(Collectors.toList());
+                    .toList();
             projectView.displayProjects(projects);
         } catch (Exception e) {
             projectView.showError(localizationManager.getText("error.load.projects") + ": " + e.getMessage());
@@ -169,7 +169,7 @@ public class ProjectController implements ActionHandler {
         } catch (SQLException e) {
             projectView.showError("user.not.found");
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("error.generic") + ": " + e.getMessage());
+            projectView.showError(GENERIC_ERROR);
         }
     }
 
@@ -206,7 +206,7 @@ public class ProjectController implements ActionHandler {
 
     private void handleAddProject() {
         try {
-            String projectName = projectView.getInput("project.add.prompt.name");
+            String projectName = projectView.getInput("project.name.prompt");
             String description = projectView.getInput("project.add.prompt.description");
             validateProjectFields(projectName, description);
             projectDAO.addProject(projectName, description);

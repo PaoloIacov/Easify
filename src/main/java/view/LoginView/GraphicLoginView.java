@@ -20,7 +20,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
 
         setTitle(localizationManager.getText("login.title"));
         setSize(400, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel() {
@@ -149,34 +149,34 @@ public class GraphicLoginView extends JFrame implements LoginView {
     }
 
     private JPasswordField createPasswordField(String placeholder) {
-        JPasswordField passwordField = new JPasswordField(15);
-        passwordField.setText(placeholder);
-        passwordField.setForeground(Color.GRAY);
-        passwordField.setEchoChar((char) 0);
-        passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
+        JPasswordField pwField = new JPasswordField(15);
+        pwField.setText(placeholder);
+        pwField.setForeground(Color.GRAY);
+        pwField.setEchoChar((char) 0);
+        pwField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (new String(passwordField.getPassword()).equals(placeholder)) {
-                    passwordField.setText("");
-                    passwordField.setForeground(Color.BLACK);
-                    passwordField.setEchoChar('•');
+                if (new String(pwField.getPassword()).equals(placeholder)) {
+                    pwField.setText("");
+                    pwField.setForeground(Color.BLACK);
+                    pwField.setEchoChar('•');
                 }
             }
 
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
-                if (new String(passwordField.getPassword()).isEmpty()) {
-                    passwordField.setForeground(Color.GRAY);
-                    passwordField.setText(placeholder);
-                    passwordField.setEchoChar((char) 0);
+                if (new String(pwField.getPassword()).isEmpty()) {
+                    pwField.setForeground(Color.GRAY);
+                    pwField.setText(placeholder);
+                    pwField.setEchoChar((char) 0);
                 }
             }
         });
-        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
+        pwField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pwField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
                 BorderFactory.createEmptyBorder(5, 15, 5, 15)));
-        return passwordField;
+        return pwField;
     }
 
     private JButton createSubmitButton(String text) {

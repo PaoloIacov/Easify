@@ -10,6 +10,8 @@ import model.domain.User;
 public class ConversationDAO {
 
     private final Connection connection;
+    private static final String DESCRIPTION = "description";
+    private static final String PROJECT_NAME = "projectName";
 
     public ConversationDAO(Connection connection) {
         this.connection = connection;
@@ -67,8 +69,8 @@ public class ConversationDAO {
                 while (rs.next()) {
                     conversations.add(new Conversation(
                             rs.getLong("id"),
-                            rs.getString("description"),
-                            rs.getString("projectName")
+                            rs.getString(DESCRIPTION),
+                            rs.getString(PROJECT_NAME)
                     ));
                 }
             }
@@ -89,8 +91,8 @@ public class ConversationDAO {
                 while (rs.next()) {
                     conversations.add(new Conversation(
                             rs.getLong("id"),
-                            rs.getString("description"),
-                            rs.getString("projectName")
+                            rs.getString(DESCRIPTION),
+                            rs.getString(PROJECT_NAME)
                     ));
                 }
             }
@@ -112,8 +114,8 @@ public class ConversationDAO {
                 while (rs.next()) {
                     Conversation conversation = new Conversation(
                             rs.getLong("ID"),
-                            rs.getString("description"),
-                            rs.getString("projectName")
+                            rs.getString(DESCRIPTION),
+                            rs.getString(PROJECT_NAME)
                     );
                     conversations.add(conversation);
                 }

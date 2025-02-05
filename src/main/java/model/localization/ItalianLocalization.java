@@ -27,7 +27,6 @@ public class ItalianLocalization implements Localization {
         // Admin
         translations.put("admin.menu.title", "Menu Amministratore");
         translations.put("admin.menu.options", "1. Visualizza tutti gli utenti\n2. Aggiungi utente\n3. Rimuovi utente\n4. Vai ai progetti\n5. Indietro\n");
-        translations.put("admin.menu.prompt", "Inserisci la tua scelta: ");
         translations.put("admin.users.title", "Lista Utenti");
         translations.put("admin.users.empty", "Nessun utente trovato");
         translations.put("admin.add.user", "Aggiungi Utente");
@@ -105,8 +104,6 @@ public class ItalianLocalization implements Localization {
         translations.put("project.menu.title", "\n=== Menu Progetto ===");
         translations.put("project.menu.options", "1. Visualizza progetti\n2. Aggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4. Vai alle conversazioni\n5. Indietro");
         translations.put("project.menu.admin.options", "1. Visualizza progetti\n2. Agggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4.Vai alle conversazioni\n5. Indietro\n6. Crea un nuovo progetto\n7. Elimina un progetto");
-        translations.put("project.menu.prompt", "Inserisci la tua scelta:");
-        translations.put("project.option.invalid", "Opzione non valida. Riprova.");
         translations.put("project.add.user.prompt.project", "Inserisci il nome del progetto:");
         translations.put("project.add.user.prompt.username", "Inserisci il nome utente da aggiungere:");
         translations.put("project.add.user.success", "Utente aggiunto al progetto con successo.");
@@ -136,8 +133,6 @@ public class ItalianLocalization implements Localization {
         translations.put("admin.options", "Opzioni Admin:");
         translations.put("admin.option.add.project", "Aggiungi Progetto");
         translations.put("admin.option.delete.project", "Elimina Progetto");
-        translations.put("admin.option.prompt", "Inserisci la tua scelta:");
-        translations.put("admin.option.invalid", "Opzione non valida. Riprova.");
         translations.put("admin.remove.project.success", "Progetto eliminato con successo");
 
         // Conversation
@@ -156,7 +151,6 @@ public class ItalianLocalization implements Localization {
         translations.put("conversation.message.input.reset", "Campo di input del messaggio cancellato.");
         translations.put("conversation.menu.title", "\n=== Menu Conversazioni ===");
         translations.put("conversation.menu.options", "1) Visualizza Messaggi\n2) Invia Messaggio\n3) Indietro");
-        translations.put("conversation.menu.prompt", "Inserisci la tua scelta:");
         translations.put("conversation.list.empty", "Nessuna conversazione disponibile.");
         translations.put("conversation.messages", "\n=== Messaggi in questa conversazione ===");
         translations.put("conversation.messages.empty", "Nessun messaggio in questa conversazione.");

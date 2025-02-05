@@ -23,6 +23,7 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     private JPanel rightPanel;
     private final Map<String, JButton> addEmployeeButtons = new HashMap<>();
     private final Map<String, JButton> deleteEmployeeButtons = new HashMap<>();
+    private static final String SUCCESS = "success.title";
 
     public GraphicProjectView(LocalizationManager localizationManager) {
         this.localizationManager = localizationManager;
@@ -32,14 +33,15 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     private void initializeUI() {
         setTitle(localizationManager.getText("project.view.title"));
         setSize(1000, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         JPanel leftPanel = createLeftPanel();
-        JPanel rightPanel = createRightPanel();
+        rightPanel = createRightPanel();
 
         add(leftPanel, BorderLayout.WEST);
+        assert rightPanel != null;
         add(rightPanel, BorderLayout.CENTER);
         setVisible(true);
     }
@@ -232,17 +234,17 @@ public class GraphicProjectView extends JFrame implements ProjectView {
 
     @Override
     public void addUserToProject(String projectName, String username) {
-        JOptionPane.showMessageDialog(this, localizationManager.getText("project.user.added") + ": " + username + " -> " + projectName, localizationManager.getText("success.title"), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, localizationManager.getText("project.user.added") + ": " + username + " -> " + projectName, localizationManager.getText(SUCCESS), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
     public void removeUserFromProject(String projectName, String username) {
-        JOptionPane.showMessageDialog(this, localizationManager.getText("project.user.removed") + ": " + username + " -> " + projectName, localizationManager.getText("success.title"), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, localizationManager.getText("project.user.removed") + ": " + username + " -> " + projectName, localizationManager.getText(SUCCESS), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
     public void showSuccess(String message) {
-        JOptionPane.showMessageDialog(this, message, localizationManager.getText("success.title"), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, message, localizationManager.getText(SUCCESS), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
