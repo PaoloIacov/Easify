@@ -22,6 +22,7 @@ public class LoginController {
     private final LoginDAO loginDAO;
     private final UserDAO userDAO;
     private final ApplicationController applicationController;
+    private static final String GENERIC_ERROR = "error.generic";
 
     public LoginController(LoginView loginView, LoginDAO loginDAO, UserDAO userDAO, ApplicationController applicationController) {
         this.loginView = loginView;
@@ -48,7 +49,7 @@ public class LoginController {
             try {
                 handleLogin();
             } catch (Exception ex) {
-                loginView.showError("error.generic");
+                loginView.showError(GENERIC_ERROR);
             }
         }
     }
@@ -60,7 +61,7 @@ public class LoginController {
                 handleLogin();
                 loggedIn = true;
             } catch (Exception e) {
-                loginView.showError("error.generic");
+                loginView.showError(GENERIC_ERROR);
             }
         }
     }
@@ -104,7 +105,7 @@ public class LoginController {
             loginView.showError(ex.getMessageKey());
             runCliLoop();
         } catch (Exception ex) {
-            loginView.showError("error.generic");
+            loginView.showError(GENERIC_ERROR);
         }
     }
 }

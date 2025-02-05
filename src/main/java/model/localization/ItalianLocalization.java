@@ -104,11 +104,9 @@ public class ItalianLocalization implements Localization {
         translations.put("project.menu.title", "\n=== Menu Progetto ===");
         translations.put("project.menu.options", "1. Visualizza progetti\n2. Aggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4. Vai alle conversazioni\n5. Indietro");
         translations.put("project.menu.admin.options", "1. Visualizza progetti\n2. Agggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4.Vai alle conversazioni\n5. Indietro\n6. Crea un nuovo progetto\n7. Elimina un progetto");
-        translations.put("project.add.user.prompt.project", "Inserisci il nome del progetto:");
         translations.put("project.add.user.prompt.username", "Inserisci il nome utente da aggiungere:");
         translations.put("project.add.user.success", "Utente aggiunto al progetto con successo.");
         translations.put("project.add.user.error", "Impossibile aggiungere l'utente al progetto");
-        translations.put("project.remove.user.prompt.project", "Inserisci il nome del progetto:");
         translations.put("project.remove.user.prompt.username", "Inserisci il nome utente da rimuovere:");
         translations.put("project.remove.user.success", "Utente rimosso dal progetto con successo.");
         translations.put("project.remove.user.error", "Impossibile rimuovere l'utente dal progetto");

@@ -27,6 +27,7 @@ public class ProjectController implements ActionHandler {
     private final CredentialsBean loggedInUser;
     private final UserDAO userDAO;
     private static final String GENERIC_ERROR = "error.generic";
+    private static final String INVALID_OPTION = "error.invalid.option";
 
     public ProjectController(ProjectView projectView, ProjectDAO projectDAO, LocalizationManager localizationManager, ApplicationController applicationController, CredentialsBean loggedInUser, UserDAO userDAO) {
         this.projectView = projectView;
@@ -85,7 +86,7 @@ public class ProjectController implements ActionHandler {
                     }
                     break;
                 default:
-                    projectView.showError(localizationManager.getText("error.invalid.option"));
+                    projectView.showError(localizationManager.getText(INVALID_OPTION));
             }
         } catch (Exception e) {
             projectView.showError(GENERIC_ERROR);
@@ -102,7 +103,7 @@ public class ProjectController implements ActionHandler {
                 String action = projectView.getInput("project.menu.prompt").trim();
                 int choice = Integer.parseInt(action);
                 if (choice < 1 || choice > 5 && loggedInUser.getRole() != 3) {
-                    projectView.showError("error.invalid.option");
+                    projectView.showError(INVALID_OPTION);
                     continue;
                 }
                 switch (action) {
@@ -114,7 +115,7 @@ public class ProjectController implements ActionHandler {
                 }
 
             } catch (NumberFormatException e) {
-                projectView.showError(localizationManager.getText("error.invalid.option"));
+                projectView.showError(localizationManager.getText(INVALID_OPTION));
             } catch (Exception e) {
                 projectView.showError(GENERIC_ERROR);
             }
