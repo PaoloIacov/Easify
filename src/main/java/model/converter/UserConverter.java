@@ -14,23 +14,10 @@ public class UserConverter {
         }
         return new UserBean(
                 user.getUsername(),
-                user.getPassword(), // ⚠️ Nota: Non è consigliabile esporre le password, gestisci criptazione!
+                user.getPassword(),
                 user.getName(),
                 user.getSurname(),
                 user.getRole()
-        );
-    }
-
-    public static User toEntity(UserBean userBean) {
-        if (userBean == null) {
-            return null;
-        }
-        return new User(
-                userBean.getUsername(),
-                userBean.getPassword(), // ⚠️ Nota: Evita di salvare password in chiaro
-                userBean.getName(),
-                userBean.getSurname(),
-                userBean.getRole()
         );
     }
 }

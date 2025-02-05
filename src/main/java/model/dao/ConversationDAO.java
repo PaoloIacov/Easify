@@ -32,14 +32,13 @@ public class ConversationDAO {
 
     public void addConversation(String description, String projectName) {
         String query = "INSERT INTO Conversation (description, projectName) VALUES (?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, description);
-            pstmt.setString(2, projectName);
-            pstmt.executeUpdate();
+        try {
+            DaoUtils.executeUpdate(connection, query, description, projectName);
         } catch (SQLException e) {
             System.err.println("Error adding conversation: " + e.getMessage());
         }
     }
+
 
     public void deleteConversation(Long conversationId) {
         String deleteParticipationQuery = "DELETE FROM ConversationParticipation WHERE conversationID = ?";

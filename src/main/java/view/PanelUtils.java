@@ -62,6 +62,20 @@ public class PanelUtils {
         container.setVisible(true);
     }
 
+    public static void configureMainWindow(JFrame frame, String title) {
+        frame.setTitle(title);
+        frame.setSize(1000, 600);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
+    }
+
+    public static JPanel createStyledPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(new Color(42, 46, 54));
+        return panel;
+    }
 }
 
 

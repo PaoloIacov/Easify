@@ -32,11 +32,7 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     }
 
     private void initializeUI() {
-        setTitle(localizationManager.getText("project.view.title"));
-        setSize(1000, 600);
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+       PanelUtils.configureMainWindow(this, localizationManager.getText("project.view.title"));
 
         JPanel leftPanel = createLeftPanel();
         rightPanel = createRightPanel();

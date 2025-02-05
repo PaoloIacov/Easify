@@ -25,11 +25,7 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     private void initializeUI() {
-        setTitle(localizationManager.getText("admin.menu.title"));
-        setSize(1000, 600);
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+        PanelUtils.configureMainWindow(this, localizationManager.getText("admin.menu.title"));
 
         JPanel leftPanel = createLeftPanel();
         JPanel rightPanel = createRightPanel();
@@ -92,9 +88,7 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     public void addUserItem(UserBean user) {
-        JPanel userItem = new JPanel();
-        userItem.setLayout(new BoxLayout(userItem, BoxLayout.Y_AXIS));
-        userItem.setBackground(new Color(42, 46, 54));
+        JPanel userItem = PanelUtils.createStyledPanel();
         userItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         userItem.setBorder(new EmptyBorder(5, 5, 5, 5));
 

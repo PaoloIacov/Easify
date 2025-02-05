@@ -3,6 +3,7 @@ package controller;
 import controller.exceptions.NullFieldException;
 import model.bean.CredentialsBean;
 import model.bean.UserBean;
+import model.converter.UserConverter;
 import model.dao.UserDAO;
 import model.domain.User;
 import model.localization.LocalizationManager;
@@ -82,7 +83,7 @@ public class AdminController implements ActionHandler {
     private void displayAllUsers() {
         try {
             List<User> users = userDAO.getAllUsers();
-            List<UserBean> userBeans = users.stream().map(this::convertToUserBean).toList();
+            List<UserBean> userBeans = users.stream().map(UserConverter::toBean).toList();
             adminView.displayAllUsers(userBeans);
         } catch (Exception e) {
             adminView.showError("Failed to fetch users: " + e.getMessage());
@@ -156,22 +157,11 @@ public class AdminController implements ActionHandler {
         try {
             String username = adminView.getSelectedUsername();
             User user = userDAO.getUserByUsername(username);
-            UserBean userBean = convertToUserBean(user);
+            UserBean userBean = UserConverter.toBean(user);
             adminView.displayUserDetails(userBean);
         } catch (Exception e) {
             adminView.showError(localizationManager.getText("admin.view.user.error") + ": " + e.getMessage());
         }
-    }
-
-
-    private UserBean convertToUserBean(User user) {
-        return new UserBean(
-                user.getUsername(),
-                user.getPassword(),
-                user.getName(),
-                user.getSurname(),
-                user.getRole()
-        );
     }
 
     private void validateUserFields(String username, String password, String name, String surname, int role) throws NullFieldException {

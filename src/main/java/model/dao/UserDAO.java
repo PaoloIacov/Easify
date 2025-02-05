@@ -34,7 +34,7 @@ public class UserDAO {
 
         try (PreparedStatement statement = connection.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
-            return UserUtils.extractUsersFromResultSet(resultSet);
+            return DaoUtils.extractUsersFromResultSet(resultSet);
         }
     }
 

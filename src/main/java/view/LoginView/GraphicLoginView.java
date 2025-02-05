@@ -4,6 +4,7 @@ import model.bean.CredentialsBean;
 import model.localization.LocalizationManager;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -142,9 +143,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
             }
         });
         textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        textField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        textField.setBorder(createCustomBorder());
         return textField;
     }
 
@@ -173,9 +172,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
             }
         });
         pwField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        pwField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        pwField.setBorder(createCustomBorder());
         return pwField;
     }
 
@@ -209,5 +206,12 @@ public class GraphicLoginView extends JFrame implements LoginView {
     private ImageIcon createImageIcon(String path) {
         java.net.URL imgURL = getClass().getClassLoader().getResource(path);
         return imgURL != null ? new ImageIcon(imgURL) : null;
+    }
+
+    public static Border createCustomBorder() {
+        return BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+        );
     }
 }

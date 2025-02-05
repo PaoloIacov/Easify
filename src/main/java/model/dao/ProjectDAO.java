@@ -77,20 +77,13 @@ public class ProjectDAO {
 
     public void addProject(String projectName, String projectDescription) throws SQLException {
         String query = "INSERT INTO Project (name, description) VALUES (?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, projectName);
-            statement.setString(2, projectDescription);
-            statement.executeUpdate();
-        }
+        DaoUtils.executeUpdate(connection, query, projectName, projectDescription);
     }
+
 
     public void addEmployeeToProject(String projectName, String username) throws SQLException {
         String query = "INSERT INTO ProjectAssignments (projectName, username) VALUES (?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, projectName);
-            statement.setString(2, username);
-            statement.executeUpdate();
-        }
+        DaoUtils.executeUpdate(connection, query, projectName, username);
     }
 
     public void deleteProject(String projectName) throws SQLException {
@@ -113,12 +106,9 @@ public class ProjectDAO {
 
     public void removeEmployeeFromProject(String projectName, String username) throws SQLException {
         String query = "DELETE FROM ProjectAssignments WHERE projectName = ? AND username = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, projectName);
-            statement.setString(2, username);
-            statement.executeUpdate();
-        }
+        DaoUtils.executeUpdate(connection, query, projectName, username);
     }
+
 
     public List<User> getUsersFromProject(String projectName) {
         List<User> users = new ArrayList<>();
@@ -130,7 +120,7 @@ public class ProjectDAO {
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, projectName);
             try (ResultSet resultSet = statement.executeQuery()) {
-                users.addAll(UserUtils.extractUsersFromResultSet(resultSet));
+                users.addAll(DaoUtils.extractUsersFromResultSet(resultSet));
             }
         } catch (SQLException e) {
             System.err.println("Errore durante il recupero degli utenti del progetto " + projectName);

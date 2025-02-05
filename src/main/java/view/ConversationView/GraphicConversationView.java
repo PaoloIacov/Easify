@@ -111,9 +111,7 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     }
 
     private void addConversationItem(ConversationBean conversation) {
-        JPanel conversationItem = new JPanel();
-        conversationItem.setLayout(new BoxLayout(conversationItem, BoxLayout.Y_AXIS));
-        conversationItem.setBackground(new Color(42, 46, 54));
+        JPanel conversationItem = PanelUtils.createStyledPanel();
         conversationItem.setMaximumSize(new Dimension(250, 50));
         conversationItem.setBorder(new EmptyBorder(5, 5, 5, 5));
 
