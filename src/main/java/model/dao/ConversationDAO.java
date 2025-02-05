@@ -94,29 +94,17 @@ public class ConversationDAO {
     }
 
 
-    public void addUserToConversation(Long conversationID, String username) {
-        String query = "INSERT INTO ConversationParticipation (conversationID, participant) VALUES (?, ?)";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setLong(1, conversationID);
-            pstmt.setString(2, username);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("Error adding employee to conversation with ID: " + conversationID + e.getMessage());
-
-        }
+    public void addUserToConversation(long conversationID, String username) {
+        String query = "INSERT INTO ConversationEmployees (conversationID, username) VALUES (?, ?)";
+        executeConversationUpdate(query, conversationID, username, "Error adding employee to conversation with ID:");
     }
 
-    public void removeUserFromConversation(Long conversationID, String username) {
-        String query = "DELETE FROM ConversationParticipation WHERE conversationID = ? AND participant = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setLong(1, conversationID);
-            pstmt.setString(2, username);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("Error removing employee from conversation with ID: " + conversationID);
-        }
+
+    public void removeUserFromConversation(long conversationID, String username) {
+        String query = "DELETE FROM ConversationEmployees WHERE conversationID = ? AND username = ?";
+        executeConversationUpdate(query, conversationID, username, "Error removing employee from conversation with ID:");
     }
+
 
     public List<User> getUsersInConversation(Long conversationID) {
         String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
@@ -177,6 +165,18 @@ public class ConversationDAO {
         }
         return conversations;
     }
+
+    private void executeConversationUpdate(String query, long conversationID, String username, String errorMessage) {
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setLong(1, conversationID);
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(errorMessage + " " + conversationID + ": " + e.getMessage());
+        }
+    }
+
+
 }
 
 

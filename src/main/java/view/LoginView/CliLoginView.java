@@ -3,6 +3,7 @@ package view.LoginView;
 import controller.exceptions.LoginExceptions.LoginException;
 import model.bean.CredentialsBean;
 import model.localization.LocalizationManager;
+import view.GeneralUtils;
 
 import java.util.Scanner;
 
@@ -65,8 +66,7 @@ public class CliLoginView implements LoginView {
 
     @Override
     public String getInput(String promptKey) {
-        System.out.print(localizationManager.getText(promptKey) + ": ");
-         return scanner.nextLine();
+        return GeneralUtils.getnput(localizationManager, promptKey);
 
     }
 

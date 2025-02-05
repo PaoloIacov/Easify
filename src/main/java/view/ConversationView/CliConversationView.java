@@ -4,6 +4,7 @@ import controller.ActionHandler;
 import model.bean.ConversationBean;
 import model.bean.MessageBean;
 import model.localization.LocalizationManager;
+import view.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +44,7 @@ public class CliConversationView implements ConversationView {
 
     @Override
     public String getInput(String promptKey) {
-        System.out.print(localizationManager.getText(promptKey) + ": ");
-        return scanner.nextLine();
+        return GeneralUtils.getnput(localizationManager, promptKey);
     }
 
     @Override

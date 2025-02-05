@@ -1,10 +1,13 @@
 package view;
 
+import model.localization.LocalizationManager;
+
 import java.util.List;
 import java.util.Scanner;
 
 public class GeneralUtils {
-
+    private static final Scanner scanner = new Scanner(System.in);
+    
     private GeneralUtils() {
     }
 
@@ -34,5 +37,10 @@ public class GeneralUtils {
             System.out.println(errorMessage);
         }
         return null;
+    }
+
+    public static String getnput(LocalizationManager localizationManager, String promptKey) {
+        System.out.print(localizationManager.getText(promptKey) + ": ");
+        return scanner.nextLine();
     }
 }
