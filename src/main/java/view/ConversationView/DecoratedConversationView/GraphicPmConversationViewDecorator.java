@@ -5,6 +5,7 @@ import model.bean.ConversationBean;
 import model.localization.LocalizationManager;
 import view.ConversationView.ConversationView;
 import view.ConversationView.GraphicConversationView;
+import view.PanelUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -71,26 +72,16 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
     }
 
     private JPanel createPmConversationHeader() {
-        JPanel pmHeader = new JPanel(new GridBagLayout());
-        pmHeader.setBackground(Color.WHITE);
-        pmHeader.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        JPanel pmHeader = PanelUtils.createHeaderPanel();
 
         JButton addConversationButton = createButton(localizationManager.getText("conversation.button.create"), "4");
-        gbc.gridx = 0;
-        pmHeader.add(addConversationButton, gbc);
+        PanelUtils.addButtonToPanel(pmHeader, addConversationButton, 0);
 
         JButton deleteConversationButton = createButton(localizationManager.getText("conversation.button.delete"), "5");
-        gbc.gridx = 1;
-        pmHeader.add(deleteConversationButton, gbc);
+        PanelUtils.addButtonToPanel(pmHeader, deleteConversationButton, 1);
 
         JButton backButton = createButton(localizationManager.getText("generic.back"), "3");
-        gbc.gridx = 2;
-        pmHeader.add(backButton, gbc);
+        PanelUtils.addButtonToPanel(pmHeader, backButton, 2);
 
         return pmHeader;
     }

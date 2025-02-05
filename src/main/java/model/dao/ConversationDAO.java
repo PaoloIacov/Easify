@@ -60,44 +60,13 @@ public class ConversationDAO {
     }
 
     public List<Conversation> getConversationsForProject(String projectName) throws SQLException {
-        List<Conversation> conversations = new ArrayList<>(); // Inizializza sempre la lista
-
-        String query = "SELECT id, description, projectName FROM Conversation WHERE projectName = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, projectName);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    conversations.add(new Conversation(
-                            rs.getLong("id"),
-                            rs.getString(DESCRIPTION),
-                            rs.getString(PROJECT_NAME)
-                    ));
-                }
-            }
-        }
-        return conversations; // Restituisce almeno una lista vuota, mai `null`
+        String query = "SELECT id, description, projectName FROM Conversations WHERE projectName = ?";
+        return getConversations(query, projectName);
     }
 
     public List<Conversation> getConversationsForEmployee(String username) throws SQLException {
-        List<Conversation> conversations = new ArrayList<>(); // Inizializza sempre la lista
-
-        String query = "SELECT c.id, c.description, c.projectName " +
-                "FROM Conversation c " +
-                "JOIN ConversationParticipation cp ON c.id = cp.conversationID " +
-                "WHERE cp.participant = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, username);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    conversations.add(new Conversation(
-                            rs.getLong("id"),
-                            rs.getString(DESCRIPTION),
-                            rs.getString(PROJECT_NAME)
-                    ));
-                }
-            }
-        }
-        return conversations; // Mai `null`, almeno una lista vuota
+        String query = "SELECT id, description, projectName FROM Conversations WHERE username = ?";
+        return getConversations(query, username);
     }
 
     public List<Conversation> getConversationsForProjectManager(String username) throws SQLException {
@@ -151,14 +120,29 @@ public class ConversationDAO {
     }
 
     public List<User> getUsersInConversation(Long conversationID) {
-        List<User> users = new ArrayList<>();
         String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
                 "FROM User u " +
                 "JOIN ConversationParticipation cp ON u.username = cp.participant " +
                 "WHERE cp.conversationID = ? AND u.role = 1";
+        return executeUserQuery(query, conversationID);
+    }
 
+    public List<User> getUsersNotInConversation(Long conversationId) {
+        String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
+                "FROM User u " +
+                "WHERE u.username NOT IN ( " +
+                "    SELECT cp.participant " +
+                "    FROM ConversationParticipation cp " +
+                "    WHERE cp.conversationId = ? " +
+                ")";
+
+        return executeUserQuery(query, conversationId);
+    }
+
+    private List<User> executeUserQuery(String query, long conversationId) {
+        List<User> users = new ArrayList<>();
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setLong(1, conversationID);
+            pstmt.setLong(1, conversationId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     String username = rs.getString("username");
@@ -172,41 +156,28 @@ public class ConversationDAO {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error retrieving users from conversation with ID: " + conversationID);
+            System.out.println("Error retrieving users from conversation with ID: " + conversationId);
         }
         return users;
     }
 
-    public List<User> getUsersNotInConversation(Long conversationId) throws SQLException {
-        List<User> users = new ArrayList<>();
-        String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
-                "FROM User u " +
-                "WHERE u.username NOT IN ( " +
-                "    SELECT cp.participant " +
-                "    FROM ConversationParticipation cp " +
-                "    WHERE cp.conversationId = ? " +
-                ")";
+    private List<Conversation> getConversations(String query, String parameterValue) throws SQLException {
+        List<Conversation> conversations = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, conversationId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    String username = resultSet.getString("username");
-                    String password = resultSet.getString("password");
-                    String name = resultSet.getString("name");
-                    String surname = resultSet.getString("surname");
-                    int role = resultSet.getInt("role");
-
-                    User user = new User(username, password, name, surname, role);
-                    users.add(user);
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, parameterValue);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    conversations.add(new Conversation(
+                            rs.getLong("id"),
+                            rs.getString(DESCRIPTION),
+                            rs.getString(PROJECT_NAME)
+                    ));
                 }
             }
         }
-
-        return users;
+        return conversations;
     }
-
 }
 
 

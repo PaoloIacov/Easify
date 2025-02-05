@@ -5,6 +5,7 @@ import model.bean.ConversationBean;
 import model.bean.MessageBean;
 import model.localization.LocalizationManager;
 import view.BackgroundPanel;
+import view.PanelUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -56,20 +57,8 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     }
 
     private JPanel createLeftPanel() {
-        leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBackground(new Color(30, 33, 40));
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setPreferredSize(new Dimension(300, 600));
-        leftPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
         conversationListPanel = new JPanel();
-        conversationListPanel.setLayout(new BoxLayout(conversationListPanel, BoxLayout.Y_AXIS));
-        conversationListPanel.setBackground(new Color(30, 33, 40));
-        JScrollPane scrollPane = new JScrollPane(conversationListPanel);
-        scrollPane.setBorder(null);
-        leftPanel.add(scrollPane);
-
-        return leftPanel;
+        return PanelUtils.createLeftPanel(conversationListPanel);
     }
 
     private JPanel createRightPanel() {
@@ -91,22 +80,13 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     }
 
     private JPanel createConversationHeader() {
-        JPanel conversationHeader = new JPanel(new GridBagLayout());
-        conversationHeader.setBackground(Color.WHITE);
-        conversationHeader.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        JPanel conversationHeader = PanelUtils.createHeaderPanel();
 
         JButton backButton = createButton(localizationManager.getText("generic.back"), "3");
-        gbc.gridx = 0;
-        conversationHeader.add(backButton, gbc);
+        PanelUtils.addButtonToPanel(conversationHeader, backButton, 0);
 
         return conversationHeader;
     }
-
 
     private JPanel createMessageInputPanel() {
         JPanel messageInputPanel = new JPanel();

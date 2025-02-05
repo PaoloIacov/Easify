@@ -2,6 +2,7 @@ package model.bean;
 
 import java.io.Serializable;
 
+
 public class CredentialsBean implements Serializable {
 
     private String username;
@@ -13,11 +14,6 @@ public class CredentialsBean implements Serializable {
     public CredentialsBean(String username, String password) {
         this.username = username;
         this.password = password;
-    }
-    public CredentialsBean(String username, String password, int role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
     }
 
     public String getUsername() {

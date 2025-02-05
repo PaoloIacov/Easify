@@ -4,6 +4,7 @@ import controller.ActionHandler;
 import model.bean.ProjectBean;
 import model.localization.LocalizationManager;
 import view.BackgroundPanel;
+import view.PanelUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -59,20 +60,8 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     }
 
     private JPanel createLeftPanel() {
-        JPanel leftPanel = new JPanel();
-        leftPanel.setBackground(new Color(30, 33, 40));
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setPreferredSize(new Dimension(300, 600));
-        leftPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
         projectListPanel = new JPanel();
-        projectListPanel.setLayout(new BoxLayout(projectListPanel, BoxLayout.Y_AXIS));
-        projectListPanel.setBackground(new Color(30, 33, 40));
-        JScrollPane projectScrollPane = new JScrollPane(projectListPanel);
-        projectScrollPane.setBorder(null);
-        leftPanel.add(projectScrollPane);
-
-        return leftPanel;
+        return PanelUtils.createLeftPanel(projectListPanel);
     }
 
     private JPanel createRightPanel() {
@@ -96,21 +85,14 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     }
 
     private JPanel createProjectHeader() {
-        JPanel projectHeader = new JPanel(new GridBagLayout());
-        projectHeader.setBackground(Color.WHITE);
-        projectHeader.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        JPanel projectHeader = PanelUtils.createHeaderPanel();
 
         JButton backButton = createButton(localizationManager.getText("generic.back"), "4");
-        gbc.gridx = 0;
-        projectHeader.add(backButton, gbc);
+        PanelUtils.addButtonToPanel(projectHeader, backButton, 0);
 
         return projectHeader;
     }
+
 
     private void updateProjectInfoPanel() {
         projectInfoPanel.removeAll();

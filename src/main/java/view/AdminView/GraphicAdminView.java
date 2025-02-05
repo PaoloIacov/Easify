@@ -4,6 +4,7 @@ import controller.ActionHandler;
 import model.bean.UserBean;
 import model.localization.LocalizationManager;
 import view.BackgroundPanel;
+import view.PanelUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,20 +40,8 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     private JPanel createLeftPanel() {
-        JPanel leftPanel = new JPanel();
-        leftPanel.setBackground(new Color(30, 33, 40));
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setPreferredSize(new Dimension(300, 600));
-        leftPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
         userListPanel = new JPanel();
-        userListPanel.setLayout(new BoxLayout(userListPanel, BoxLayout.Y_AXIS));
-        userListPanel.setBackground(new Color(30, 33, 40));
-        JScrollPane userScrollPane = new JScrollPane(userListPanel);
-        userScrollPane.setBorder(null);
-        leftPanel.add(userScrollPane);
-
-        return leftPanel;
+        return PanelUtils.createLeftPanel(userListPanel);
     }
 
     private JPanel createRightPanel() {
@@ -74,43 +63,23 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     private JPanel createUserHeader() {
-        JPanel userHeader = new JPanel(new GridBagLayout());
-        userHeader.setBackground(Color.WHITE);
-        userHeader.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        JPanel userHeader = PanelUtils.createHeaderPanel();
 
         JButton addUserButton = createButton(localizationManager.getText("admin.add.user"), "2");
-        gbc.gridx = 0;
-        userHeader.add(addUserButton, gbc);
+        PanelUtils.addButtonToPanel(userHeader, addUserButton, 0);
 
         JButton deleteUserButton = createButton(localizationManager.getText("admin.remove.user"), "3");
-        gbc.gridx = 1;
-        userHeader.add(deleteUserButton, gbc);
+        PanelUtils.addButtonToPanel(userHeader, deleteUserButton, 1);
 
         JButton backButton = createButton(localizationManager.getText("generic.back"), "5");
-        gbc.gridx = 2;
-        userHeader.add(backButton, gbc);
+        PanelUtils.addButtonToPanel(userHeader, backButton, 2);
 
         return userHeader;
     }
 
     private void addNavigateToProjectsButton() {
-        JButton navigateToProjectsButton = new JButton(localizationManager.getText("admin.menu.navigate.project"));
-        navigateToProjectsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        navigateToProjectsButton.setPreferredSize(new Dimension(200, 40));
-
-        navigateToProjectsButton.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction("4");
-            }
-        });
-
         userInfoPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        userInfoPanel.add(navigateToProjectsButton);
+        userInfoPanel.add(createNavigateToProjectsButton());
     }
 
     private JButton createButton(String text, String actionCommand) {
@@ -203,18 +172,8 @@ public class GraphicAdminView extends JFrame implements AdminView {
             userInfoPanel.add(noUserLabel);
         }
 
-        JButton navigateToProjectsButton = new JButton(localizationManager.getText("admin.menu.navigate.project"));
-        navigateToProjectsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        navigateToProjectsButton.setPreferredSize(new Dimension(200, 40));
-
-        navigateToProjectsButton.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction("4");
-            }
-        });
-
         userInfoPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        userInfoPanel.add(navigateToProjectsButton);
+        userInfoPanel.add(createNavigateToProjectsButton());
         refresh();
     }
 
@@ -318,6 +277,20 @@ public class GraphicAdminView extends JFrame implements AdminView {
             userInfoPanel.add(userDetailsLabel);
         }
         refresh();
+    }
+
+    public JButton createNavigateToProjectsButton() {
+        JButton navigateToProjectsButton = new JButton(localizationManager.getText("admin.menu.navigate.project"));
+        navigateToProjectsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        navigateToProjectsButton.setPreferredSize(new Dimension(200, 40));
+
+        navigateToProjectsButton.addActionListener(_ -> {
+            if (actionHandler != null) {
+                actionHandler.handleAction("4");
+            }
+        });
+
+        return navigateToProjectsButton;
     }
 
 }

@@ -125,21 +125,12 @@ public class ProjectDAO {
         String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
                 "FROM User u " +
                 "JOIN ProjectAssignments pa ON u.username = pa.username " +
-                "WHERE pa.projectName = ? AND u.role = 1"; // Aggiunto filtro per ruolo = 1 (Employee)
+                "WHERE pa.projectName = ? AND u.role = 1"; // Solo Employee (role = 1)
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, projectName);
             try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    String username = resultSet.getString("username");
-                    String password = resultSet.getString("password");
-                    String name = resultSet.getString("name");
-                    String surname = resultSet.getString("surname");
-                    int role = resultSet.getInt("role");
-
-                    User user = new User(username, password, name, surname, role);
-                    users.add(user);
-                }
+                users.addAll(UserUtils.extractUsersFromResultSet(resultSet));
             }
         } catch (SQLException e) {
             System.err.println("Errore durante il recupero degli utenti del progetto " + projectName);
@@ -147,4 +138,5 @@ public class ProjectDAO {
 
         return users;
     }
+
 }

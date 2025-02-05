@@ -48,6 +48,7 @@ public class ConversationController implements ActionHandler {
         if (!conversationView.isGraphic()) {
             runCliLoop();
         } else {
+            conversationView.setActionHandler(this);
             conversationView.display();
         }
     }

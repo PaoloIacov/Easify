@@ -60,7 +60,7 @@ public class GraphicLoginView extends JFrame implements LoginView {
     public CredentialsBean getCredentialsInput() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
-        return new CredentialsBean(username, password, -1);
+        return new CredentialsBean(username, password);
     }
 
     @Override

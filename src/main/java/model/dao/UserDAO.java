@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import model.domain.User;
 
@@ -31,23 +30,12 @@ public class UserDAO {
     }
 
     public List<User> getAllUsers() throws SQLException {
-        List<User> users = new ArrayList<>();
         String query = "SELECT username, password, name, surname, role FROM User";
 
         try (PreparedStatement statement = connection.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
-            while (resultSet.next()) {
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-                String name = resultSet.getString("name");
-                String surname = resultSet.getString("surname");
-                int role = resultSet.getInt("role");
-
-                User user = new User(username, password, name, surname, role);
-                users.add(user);
-            }
+            return UserUtils.extractUsersFromResultSet(resultSet);
         }
-        return users;
     }
 
     public void addUser(String username, String password, String name, String surname, int role) throws SQLException {

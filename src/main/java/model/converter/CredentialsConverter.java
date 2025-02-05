@@ -17,9 +17,5 @@ public class CredentialsConverter {
         return credentials;
     }
 
-    // Convert Credentials to CredentialsBean
-    public static CredentialsBean toBean(Credentials credentials) {
-        return new CredentialsBean(credentials.getUsername(), credentials.getPassword(), credentials.getRole());
-    }
 }
 
