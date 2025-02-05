@@ -26,10 +26,6 @@ public class AdminController implements ActionHandler {
         this.applicationController = applicationController;
         this.localizationManager = localizationManager;
         this.loggedInUser = loggedInUser;
-
-        if (adminView.isGraphic()) {
-            adminView.setActionHandler(this);
-        }
     }
 
     public void start() {
@@ -37,6 +33,7 @@ public class AdminController implements ActionHandler {
             runCliLoop();
         } else {
             adminView.display();
+            adminView.setActionHandler(this);
             displayAllUsers();
         }
     }
@@ -46,7 +43,7 @@ public class AdminController implements ActionHandler {
         while (running) {
             try {
                 adminView.display();
-                String choice = adminView.getInput("admin.menu.prompt");
+                String choice = adminView.getInput("interface.prompt");
                 running = handleAction(choice);
             } catch (Exception e) {
                 adminView.showError("An error occurred: " + e.getMessage());

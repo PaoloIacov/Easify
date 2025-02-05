@@ -21,7 +21,7 @@ public class CliPmConversationViewDecorator extends ConversationViewDecorator {
     }
 
     private void displayPmMenu() {
-        System.out.println("\n=== " + localizationManager.getText("conversation.menu.pm.title") + " ===");
+        System.out.println(localizationManager.getText("conversation.menu.pm.title"));
         System.out.println(localizationManager.getText("conversation.menu.pm.options"));
     }
 

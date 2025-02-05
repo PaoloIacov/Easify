@@ -71,7 +71,7 @@ public class ItalianLocalization implements Localization {
         translations.put("interface.graphic", "Interfaccia Grafica");
         translations.put("interface.cli", "Interfaccia a riga di comando");
         translations.put("interface.selected", "Interfaccia selezionata");
-        translations.put("interface.prompt", "Inserisci la tua scelta");
+        translations.put("interface.prompt", "Inserisci la tua scelta: ");
         translations.put("interface.invalid", "Scelta non valida. Riprova.");
         translations.put("error.no.previous.view", "Nessuna vista precedente a cui tornare.");
         translations.put("view.close", "Chiudendo la pagina");
@@ -103,7 +103,7 @@ public class ItalianLocalization implements Localization {
         translations.put("project.list.empty", "Nessun progetto trovato.");
         translations.put("project.menu.title", "\n=== Menu Progetto ===");
         translations.put("project.menu.options", "1. Visualizza progetti\n2. Aggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4. Vai alle conversazioni\n5. Indietro");
-        translations.put("project.menu.admin.options", "1. Visualizza progetti\n2. Agggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4.Vai alle conversazioni\n5. Indietro\n6. Crea un nuovo progetto\n7. Elimina un progetto");
+        translations.put("project.menu.admin.options", "1. Visualizza progetti\n2. Aggiungi un dipendente al progetto\n3. Elimina un dipendente dal progetto\n4. Vai alle conversazioni\n5. Indietro\n6. Crea un nuovo progetto\n7. Elimina un progetto");
         translations.put("project.add.user.prompt.username", "Inserisci il nome utente da aggiungere:");
         translations.put("project.add.user.success", "Utente aggiunto al progetto con successo.");
         translations.put("project.add.user.error", "Impossibile aggiungere l'utente al progetto");

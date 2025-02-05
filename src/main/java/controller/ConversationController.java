@@ -40,10 +40,6 @@ public class ConversationController implements ActionHandler {
         this.localizationManager = localizationManager;
         this.loggedInUser = loggedInUser;
         this.applicationController = applicationController;
-
-        if (conversationView.isGraphic()) {
-            conversationView.setActionHandler(this);
-        }
     }
 
     public void start(String projectName) {
@@ -61,7 +57,7 @@ public class ConversationController implements ActionHandler {
         while (running) {
             try {
                 conversationView.display();
-                String choice = conversationView.getInput("conversation.menu.prompt");
+                String choice = conversationView.getInput("interface.prompt");
                 int action = Integer.parseInt(choice);
                 if (action<1 || action>3 && loggedInUser.getRole() == 1) {
                     conversationView.showError("error.invalid.option");

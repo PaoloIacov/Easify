@@ -100,7 +100,7 @@ public class ProjectController implements ActionHandler {
             try {
                 displayProjectsForUser(loggedInUser.getUsername());
                 projectView.display();
-                String action = projectView.getInput("project.menu.prompt").trim();
+                String action = projectView.getInput("interface.prompt").trim();
                 int choice = Integer.parseInt(action);
                 if (choice < 1 || choice > 5 && loggedInUser.getRole() != 3) {
                     projectView.showError(INVALID_OPTION);
@@ -207,7 +207,7 @@ public class ProjectController implements ActionHandler {
 
     private void handleAddProject() {
         try {
-            String projectName = projectView.getInput("project.name.prompt");
+            String projectName = projectView.getInput("project.add.prompt.name");
             String description = projectView.getInput("project.add.prompt.description");
             validateProjectFields(projectName, description);
             projectDAO.addProject(projectName, description);
@@ -257,8 +257,6 @@ public class ProjectController implements ActionHandler {
 
             projectDAO.deleteProject(projectToDelete.getName());
 
-            projectView.showSuccess(localizationManager.getText("admin.remove.project.success"));
-            displayProjectsForUser(loggedInUser.getUsername());
         } catch (Exception e) {
             projectView.showError(localizationManager.getText("admin.remove.project.error") + ": " + e.getMessage());
         }

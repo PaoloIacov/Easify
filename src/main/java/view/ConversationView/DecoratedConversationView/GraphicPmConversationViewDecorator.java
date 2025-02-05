@@ -28,6 +28,12 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
         replaceConversationListPanel();
     }
 
+    @Override
+    public void displayConversations(List<ConversationBean> conversations) {
+        conversationList = conversations;
+        replaceConversationListPanel();
+    }
+
     private JButton createButton(String text, String actionCommand) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -39,14 +45,6 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
         });
         return button;
     }
-
-    @Override
-    public void displayConversations(List<ConversationBean> conversations) {
-        conversationList = conversations;
-        replaceConversationListPanel();
-    }
-
-
 
     private void replaceHeaderWithPmHeader() {
         if (decoratedConversationView instanceof GraphicConversationView graphicView) {
