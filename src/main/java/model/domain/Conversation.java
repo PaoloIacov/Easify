@@ -2,24 +2,22 @@ package model.domain;
 
 public class Conversation {
 
-    private long conversationID;
+    private Long conversationID;
     private String description;
     private String projectName;
 
-    public Conversation() {
-    }
 
-    public Conversation(long id, String description, String projectName) {
+    public Conversation(Long id, String description, String projectName) {
         this.conversationID = id;
         this.description = description;
         this.projectName = projectName;
     }
 
-    public long getConversationID() {
+    public Long getConversationID() {
         return conversationID;
     }
 
-    public void setConversationID(long conversationID) {
+    public void setConversationID(Long conversationID) {
         this.conversationID = conversationID;
     }
 

@@ -1,4 +1,4 @@
-package model.dao;
+package model.dao.LoginDAO;
 
 import model.domain.Credentials;
 
@@ -7,30 +7,28 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class LoginDAO {
+public class DbmsLoginDAO implements LoginDAO {
 
-    private Connection connection;
+    private final Connection connection;
 
-    public LoginDAO(Connection connection) {
+    public DbmsLoginDAO(Connection connection) {
         this.connection = connection;
     }
 
-    // Metodo per validare le credenziali
+    @Override
     public boolean validateCredentials(Credentials credentials) throws SQLException {
-        String query = "SELECT username,password,name,surname,role FROM User WHERE username = ? AND password = ?";
+        String query = "SELECT username, password, role FROM User WHERE username = ? AND password = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, credentials.getUsername());
             stmt.setString(2, credentials.getPassword());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Se le credenziali sono valide, imposta il ruolo
-                    credentials.setRole(rs.getInt("role"));
+                    credentials.setRole(rs.getInt("role")); // Imposta il ruolo nel bean
                     return true;
                 }
-                return false;
             }
         }
+        return false;
     }
 }
-//Miglioramenti possibili: hashing della password in SHA-256 e creazione di un token di sessione

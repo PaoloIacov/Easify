@@ -1,29 +1,30 @@
 package model.bean;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 public class MessageBean implements Serializable {
 
-    private long messageID;
+    private Long conversationID;
     private String senderUsername;
     private String content;
-    private String formattedDate;
+    private LocalDateTime datetime;
 
     public MessageBean() {}
 
-    public MessageBean(long id, String senderUsername, String content, String formattedDate) {
-        this.messageID = id;
+    public MessageBean( Long conversationID, String senderUsername, String content, LocalDateTime datetime) {
+        this.conversationID = conversationID;
         this.senderUsername = senderUsername;
         this.content = content;
-        this.formattedDate = formattedDate;
+        this.datetime = datetime;
     }
 
-    public long getMessageID() {
-        return messageID;
+    public Long getConversationID() {
+        return conversationID;
     }
 
-    public void setMessageID(long messageID) {
-        this.messageID = messageID;
+    public void setConversationID(Long conversationID) {
+        this.conversationID = conversationID;
     }
 
     public String getSenderUsername() {
@@ -42,12 +43,12 @@ public class MessageBean implements Serializable {
         this.content = content;
     }
 
-    public String getFormattedDate() {
-        return formattedDate;
+    public LocalDateTime getDatetime() {
+        return datetime;
     }
 
-    public void setFormattedDate(String formattedDate) {
-        this.formattedDate = formattedDate;
+    public void setDatetime(LocalDateTime datetime) {
+        this.datetime = datetime;
     }
 }
 

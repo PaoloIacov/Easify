@@ -32,9 +32,15 @@ public class ProjectBean implements Serializable {
 
     @Override
     public String toString() {
-        return "ProjectBean{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        return """
+        --------------------------------------------------
+        Name:            %s
+        Description:     %s
+        --------------------------------------------------
+        """.formatted(
+                this.name,
+                this.description
+
+        );
     }
 }

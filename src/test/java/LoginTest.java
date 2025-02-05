@@ -1,6 +1,6 @@
 import model.bean.CredentialsBean;
 import model.dao.ConnectionFactory;
-import model.dao.LoginDAO;
+import model.dao.LoginDAO.DbmsLoginDAO;
 import model.domain.Credentials;
 import org.junit.jupiter.api.*;
 
@@ -15,14 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class LoginTest {
 
     private Connection connection;
-    private LoginDAO loginDAO;
+    private DbmsLoginDAO dbmsLoginDAO;
 
     @BeforeAll
     public void setupDatabase() throws SQLException {
         connection = ConnectionFactory.getConnection();
-        loginDAO = new LoginDAO(connection);
+        dbmsLoginDAO = new DbmsLoginDAO(connection);
 
-        // Prepara il database con dati di test
         try (PreparedStatement stmt = connection.prepareStatement(
                 "INSERT INTO User (username, password, role) VALUES (?, ?, ?)")) {
             stmt.setString(1, "testUser");
@@ -58,7 +57,7 @@ class LoginTest {
         Credentials credentials = new Credentials();
         credentials.setUsername(credentialsBean.getUsername());
         credentials.setPassword(credentialsBean.getPassword());
-        boolean isValid = loginDAO.validateCredentials(credentials);
+        boolean isValid = dbmsLoginDAO.validateCredentials(credentials);
 
         // Asserzione
         assertTrue(isValid, "Login with valid credentials should pass.");
@@ -77,7 +76,7 @@ class LoginTest {
         Credentials credentials = new Credentials();
         credentials.setUsername(credentialsBean.getUsername());
         credentials.setPassword(credentialsBean.getPassword());
-        boolean isValid = loginDAO.validateCredentials(credentials);
+        boolean isValid = dbmsLoginDAO.validateCredentials(credentials);
 
         // Asserzione
         assertFalse(isValid, "Login with invalid credentials should fail.");

@@ -6,12 +6,18 @@ public class CredentialsBean implements Serializable {
 
     private String username;
     private String password;
+    private int role;
 
     public CredentialsBean() {}
 
     public CredentialsBean(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+    public CredentialsBean(String username, String password, int role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
     }
 
     public String getUsername() {
@@ -30,5 +36,12 @@ public class CredentialsBean implements Serializable {
         this.password = password;
     }
 
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
+    }
 }
 

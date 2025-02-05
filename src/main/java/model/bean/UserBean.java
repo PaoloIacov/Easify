@@ -7,17 +7,17 @@ public class UserBean implements Serializable {
     private String password;
     private String name;
     private String surname;
-    private String roleName;
+    private int role;
 
     public UserBean() {
     }
 
-    public UserBean(String username, String password, String name, String surname, String roleName) {
+    public UserBean(String username, String password, String name, String surname, int role) {
         this.username = username;
         this.password = password;
         this.name = name;
         this.surname = surname;
-        this.roleName = roleName;
+        this.role = role;
     }
 
     public String getUsername() {
@@ -52,13 +52,38 @@ public class UserBean implements Serializable {
         this.surname = surname;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public int getRole() {
+        return role;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setRole(int role) {
+        this.role = role;
     }
 
+    @Override
+    public String toString() {
+        return """
+        -------------------------
+        Username: %s
+        Name:     %s %s
+        Role:     %s
+        -------------------------
+        """.formatted(
+                this.username,
+                this.name,
+                this.surname,
+                getRoleName(this.role)
+        );
+    }
+
+    // Helper method to convert role ID to a readable name
+    private String getRoleName(int role) {
+        return switch (role) {
+            case 1 -> "Employee";
+            case 2 -> "Project Manager";
+            case 3 -> "Admin";
+            default -> "Unknown";
+        };
+    }
 }
 

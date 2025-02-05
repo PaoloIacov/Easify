@@ -6,4 +6,7 @@ public interface View {
     void refresh();
     void back();
     void showError(String message);
+    String getInput(String promptKey);
+    boolean isGraphic();
+
 }
