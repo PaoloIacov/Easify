@@ -2,6 +2,7 @@ package view.ConversationView.DecoratedConversationView;
 
 import model.localization.LocalizationManager;
 import view.ConversationView.ConversationView;
+import view.GeneralUtils;
 
 import java.util.List;
 import java.util.Scanner;
@@ -32,9 +33,7 @@ public class CliPmConversationViewDecorator extends ConversationViewDecorator {
         }
 
         System.out.println(localizationManager.getText("conversation.delete.prompt"));
-        for (int i = 0; i < conversationDescriptions.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + conversationDescriptions.get(i));
-        }
+        GeneralUtils.printList(conversationDescriptions, null);
 
         String selectedIndex = getInput("conversation.delete.select");
 
@@ -54,38 +53,18 @@ public class CliPmConversationViewDecorator extends ConversationViewDecorator {
 
     public String showAddUserDialog(List<String> usernames) {
         System.out.println(localizationManager.getText("conversation.add.user.prompt"));
-        for (int i = 0; i < usernames.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + usernames.get(i));
-        }
+        GeneralUtils.printList(usernames, null);
         System.out.print(localizationManager.getText("conversation.add.user.select") + ": ");
 
-        try {
-            int choice = Integer.parseInt(scanner.nextLine());
-            if (choice > 0 && choice <= usernames.size()) {
-                return usernames.get(choice - 1);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText("conversation.add.user.invalid"));
-        }
-        return null;
+        return GeneralUtils.selectUsername(scanner, usernames, localizationManager.getText("conversation.add.user.invalid"));
     }
 
     public String showRemoveUserDialog(List<String> usernames) {
         System.out.println(localizationManager.getText("conversation.remove.user.prompt"));
-        for (int i = 0; i < usernames.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + usernames.get(i));
-        }
+        GeneralUtils.printList(usernames, null);
         System.out.print(localizationManager.getText("conversation.remove.user.select") + ": ");
 
-        try {
-            int choice = Integer.parseInt(scanner.nextLine());
-            if (choice > 0 && choice <= usernames.size()) {
-                return usernames.get(choice - 1);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText("conversation.remove.user.invalid"));
-        }
-        return null;
+        return GeneralUtils.selectUsername(scanner, usernames, localizationManager.getText("conversation.remove.user.invalid"));
     }
 }
 

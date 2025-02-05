@@ -44,6 +44,24 @@ public class PanelUtils {
         GridBagConstraints gbc = getDefaultGridBagConstraints(gridX);
         panel.add(button, gbc);
     }
+
+    public static BackgroundPanel createBackgroundPanel(String backgroundImagePath) {
+        BackgroundPanel panel = new BackgroundPanel(backgroundImagePath);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        return panel;
+    }
+
+    public static void setupMainLayout(Container container, JPanel leftPanel, JPanel rightPanel) {
+        container.add(leftPanel, BorderLayout.WEST);
+
+        if (rightPanel != null) {
+            container.add(rightPanel, BorderLayout.CENTER);
+        }
+
+        container.setVisible(true);
+    }
+
 }
 
 

@@ -35,15 +35,12 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-         leftPanel = createLeftPanel();
-         rightPanel = createRightPanel();
+        leftPanel = createLeftPanel();
+        rightPanel = createRightPanel();
 
-        assert leftPanel != null;
-        add(leftPanel, BorderLayout.WEST);
-        assert rightPanel != null;
-        add(rightPanel, BorderLayout.CENTER);
-        setVisible(true);
+        PanelUtils.setupMainLayout(this, leftPanel, rightPanel);
     }
+
 
     private JButton createButton(String text, String actionCommand) {
         JButton button = new JButton(text);

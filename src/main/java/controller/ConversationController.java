@@ -192,11 +192,7 @@ public class ConversationController implements ActionHandler {
             conversationDAO.addConversation(description, currentProjectName);
             conversationView.showSuccess(localizationManager.getText("conversation.add.success"));
 
-            List<ConversationBean> updatedConversations = conversationDAO.getConversationsForProject(currentProjectName)
-                    .stream()
-                    .map(ConversationConverter::toBean)
-                    .toList();
-            conversationView.displayConversations(updatedConversations);
+            updateAndDisplayConversations(currentProjectName);
 
         } catch (Exception e) {
             conversationView.showError(localizationManager.getText("conversation.add.error") + ": " + e.getMessage());
@@ -256,11 +252,7 @@ public class ConversationController implements ActionHandler {
 
     private void displayConversationsForProject(String projectName) {
         try {
-            List<ConversationBean> conversations = conversationDAO.getConversationsForProject(projectName)
-                    .stream()
-                    .map(ConversationConverter::toBean)
-                    .toList();
-            conversationView.displayConversations(conversations);
+            updateAndDisplayConversations(projectName);
         } catch (SQLException e) {
             conversationView.showError(localizationManager.getText(LOADING_ERROR) + ": " + e.getMessage());
         }
@@ -348,6 +340,14 @@ public class ConversationController implements ActionHandler {
         } catch (Exception e) {
             conversationView.showError(localizationManager.getText("conversation.remove.user.error") + ": " + e.getMessage());
         }
+    }
+
+    private void updateAndDisplayConversations(String projectName) throws SQLException {
+        List<ConversationBean> conversations = conversationDAO.getConversationsForProject(projectName)
+                .stream()
+                .map(ConversationConverter::toBean)
+                .toList();
+        conversationView.displayConversations(conversations);
     }
 
 

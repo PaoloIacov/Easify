@@ -3,6 +3,7 @@ package view.AdminView;
 import controller.ActionHandler;
 import model.bean.UserBean;
 import model.localization.LocalizationManager;
+import view.GeneralUtils;
 
 import java.util.List;
 import java.util.Scanner;
@@ -63,9 +64,7 @@ public class CliAdminView implements AdminView {
         }
 
         System.out.println("\n" + localizationManager.getText("admin.remove.user.list"));
-        for (int i = 0; i < usernames.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + usernames.get(i));
-        }
+        GeneralUtils.printList(usernames, null);
 
         int selectedIndex = -1;
         while (selectedIndex < 1 || selectedIndex > usernames.size()) {

@@ -41,11 +41,9 @@ public class GraphicProjectView extends JFrame implements ProjectView {
         JPanel leftPanel = createLeftPanel();
         rightPanel = createRightPanel();
 
-        add(leftPanel, BorderLayout.WEST);
-        assert rightPanel != null;
-        add(rightPanel, BorderLayout.CENTER);
-        setVisible(true);
+        PanelUtils.setupMainLayout(this, leftPanel, rightPanel);
     }
+
 
     private JButton createButton(String text, String actionCommand) {
         JButton button = new JButton(text);
@@ -65,15 +63,12 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     }
 
     private JPanel createRightPanel() {
-        rightPanel = new JPanel();
-        rightPanel.setLayout(new BorderLayout());
+        rightPanel = new JPanel(new BorderLayout());
 
         JPanel projectHeader = createProjectHeader();
         rightPanel.add(projectHeader, BorderLayout.NORTH);
 
-        projectInfoPanel = new BackgroundPanel("background.jpg");
-        projectInfoPanel.setLayout(new BoxLayout(projectInfoPanel, BoxLayout.Y_AXIS));
-        projectInfoPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        projectInfoPanel = PanelUtils.createBackgroundPanel("background.jpg");
 
         updateProjectInfoPanel();
 
@@ -98,37 +93,18 @@ public class GraphicProjectView extends JFrame implements ProjectView {
         projectInfoPanel.removeAll();
 
         if (selectedProjectName != null && !selectedProjectName.trim().isEmpty()) {
-            JLabel projectNameLabel = new JLabel("<html><h1>" + localizationManager.getText("project.name") + ": " + selectedProjectName + "</h1></html>");
-            projectNameLabel.setForeground(Color.WHITE);
-            projectNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            projectInfoPanel.add(projectNameLabel);
-
-            projectInfoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-            JLabel projectDescriptionLabel = new JLabel("<html><p style='width: 300px;'>" + localizationManager.getText("project.description") + ": " + selectedProjectDescription + "</p></html>");
-            projectDescriptionLabel.setForeground(Color.WHITE);
-            projectDescriptionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            projectInfoPanel.add(projectDescriptionLabel);
-
-            projectInfoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            addLabelToPanel(projectInfoPanel, "<html><h1>" + localizationManager.getText("project.name") + ": " + selectedProjectName + "</h1></html>");
+            addLabelToPanel(projectInfoPanel, "<html><p style='width: 300px;'>" + localizationManager.getText("project.description") + ": " + selectedProjectDescription + "</p></html>");
 
             JButton viewConversationsButton = createButton(localizationManager.getText("project.button.view.conversations"), "8");
-            projectInfoPanel.add(viewConversationsButton);
-            projectInfoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-            projectInfoPanel.add(viewConversationsButton);
-            projectInfoPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            addComponentWithSpacing(projectInfoPanel, viewConversationsButton);
         } else {
-            JLabel noProjectSelectedLabel = new JLabel("<html><h2>" + localizationManager.getText("project.no.selected") + "</h2></html>");
-            noProjectSelectedLabel.setForeground(Color.WHITE);
-            noProjectSelectedLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            projectInfoPanel.add(noProjectSelectedLabel);
+            addLabelToPanel(projectInfoPanel, "<html><h2>" + localizationManager.getText("project.no.selected") + "</h2></html>");
         }
 
         projectInfoPanel.revalidate();
         projectInfoPanel.repaint();
     }
-
 
     @Override
     public void displayProjects(List<ProjectBean> projects) {
@@ -318,4 +294,19 @@ public class GraphicProjectView extends JFrame implements ProjectView {
     public JPanel getRightPanel() {
         return rightPanel;
     }
+
+    private void addLabelToPanel(JPanel panel, String text) {
+        JLabel label = new JLabel(text);
+        label.setForeground(Color.WHITE);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(label);
+        panel.add(Box.createRigidArea(new Dimension(0, 10))); // Aggiunge spazio tra gli elementi
+    }
+
+    private void addComponentWithSpacing(JPanel panel, JComponent component) {
+        panel.add(component);
+        panel.add(Box.createRigidArea(new Dimension(0, 10))); // Spazio dopo ogni componente
+    }
+
+
 }

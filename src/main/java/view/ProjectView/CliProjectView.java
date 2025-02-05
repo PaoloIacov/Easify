@@ -3,6 +3,7 @@ package view.ProjectView;
 import controller.ActionHandler;
 import model.bean.ProjectBean;
 import model.localization.LocalizationManager;
+import view.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,20 +76,10 @@ public class CliProjectView implements ProjectView {
     @Override
     public String showRemoveUserFromProjectDialog(List<String> usernames) {
         System.out.println(localizationManager.getText("admin.remove.user.prompt"));
-        for (int i = 0; i < usernames.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + usernames.get(i));
-        }
+        GeneralUtils.printList(usernames, null);
         System.out.print(localizationManager.getText("admin.remove.user.select") + ": ");
 
-        try {
-            int choice = Integer.parseInt(scanner.nextLine());
-            if (choice > 0 && choice <= usernames.size()) {
-                return usernames.get(choice - 1);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText("admin.remove.user.invalid"));
-        }
-        return null;
+        return GeneralUtils.selectUsername(scanner, usernames, localizationManager.getText("admin.input.invalid"));
     }
 
 
@@ -132,8 +123,7 @@ public class CliProjectView implements ProjectView {
         System.out.print(localizationManager.getText("project.select.prompt") + ": ");
         try {
             int selectedIndex = Integer.parseInt(scanner.nextLine().trim());
-            if (selectedIndex < 1 || selectedIndex > projectList.size()) {
-                System.out.println(localizationManager.getText(INVALID_SELECTION));
+            if (!isValidIndex(selectedIndex, projectList.size(), INVALID_SELECTION, localizationManager)) {
                 return null;
             }
 
@@ -156,8 +146,7 @@ public class CliProjectView implements ProjectView {
         int choice;
         try {
             choice = Integer.parseInt(scanner.nextLine().trim());
-            if (choice < 1 || choice > projectList.size()) {
-                System.out.println(localizationManager.getText(INVALID_SELECTION));
+            if (!isValidIndex(choice, projectList.size(), INVALID_SELECTION, localizationManager)) {
                 return null;
             }
         } catch (NumberFormatException e) {
@@ -168,5 +157,13 @@ public class CliProjectView implements ProjectView {
         String selectedProjectDescription = projectList.get(choice - 1).getDescription();
         System.out.println(localizationManager.getText("project.selected") + ": " + selectedProjectDescription);
         return selectedProjectDescription;
+    }
+
+    public static boolean isValidIndex(int index, int listSize, String errorMessage, LocalizationManager localizationManager) {
+        if (index < 1 || index > listSize) {
+            System.out.println(localizationManager.getText(errorMessage));
+            return false;
+        }
+        return true;
     }
 }

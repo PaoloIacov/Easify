@@ -1,4 +1,5 @@
 import model.bean.CredentialsBean;
+import model.converter.CredentialsConverter;
 import model.dao.ConnectionFactory;
 import model.dao.LoginDAO.DbmsLoginDAO;
 import model.domain.Credentials;
@@ -48,46 +49,20 @@ class LoginTest {
     void testValidLogin() throws SQLException {
         // Simula input valido
         String simulatedInput = "testUser\ntestPassword\n";
-        simulateUserInput(simulatedInput);
-
-        // Recupera le credenziali simulate
-        CredentialsBean credentialsBean = getCredentialsInput();
-
-        // Converte in modello e valida
-        Credentials credentials = new Credentials();
-        credentials.setUsername(credentialsBean.getUsername());
-        credentials.setPassword(credentialsBean.getPassword());
-        boolean isValid = dbmsLoginDAO.validateCredentials(credentials);
-
-        // Asserzione
-        assertTrue(isValid, "Login with valid credentials should pass.");
+        assertTrue(processSimulatedLogin(simulatedInput), "Login with valid credentials should pass.");
     }
 
     @Test
     void testInvalidLogin() throws SQLException {
         // Simula input non valido
         String simulatedInput = "wrongUser\nwrongPassword\n";
-        simulateUserInput(simulatedInput);
-
-        // Recupera le credenziali simulate
-        CredentialsBean credentialsBean = getCredentialsInput();
-
-        // Converte in modello e valida
-        Credentials credentials = new Credentials();
-        credentials.setUsername(credentialsBean.getUsername());
-        credentials.setPassword(credentialsBean.getPassword());
-        boolean isValid = dbmsLoginDAO.validateCredentials(credentials);
-
-        // Asserzione
-        assertFalse(isValid, "Login with invalid credentials should fail.");
+        assertFalse(processSimulatedLogin(simulatedInput), "Login with invalid credentials should fail.");
     }
 
-    // Metodo per simulare l'input dell'utente
     private void simulateUserInput(String input) {
         System.setIn(new ByteArrayInputStream(input.getBytes()));
     }
 
-    // Metodo per recuperare le credenziali simulate
     private CredentialsBean getCredentialsInput() {
         java.util.Scanner scanner = new java.util.Scanner(System.in);
 
@@ -98,5 +73,15 @@ class LoginTest {
         String password = scanner.nextLine();
 
         return new CredentialsBean(username, password);
+    }
+
+    public boolean processSimulatedLogin(String simulatedInput) throws SQLException {
+        simulateUserInput(simulatedInput);
+
+        CredentialsBean credentialsBean = getCredentialsInput();
+
+        Credentials credentials = CredentialsConverter.toDomain(credentialsBean);
+
+        return dbmsLoginDAO.validateCredentials(credentials);
     }
 }

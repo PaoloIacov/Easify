@@ -45,15 +45,12 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     private JPanel createRightPanel() {
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BorderLayout());
+        JPanel rightPanel = new JPanel(new BorderLayout());
 
         JPanel userHeader = createUserHeader();
         rightPanel.add(userHeader, BorderLayout.NORTH);
 
-        userInfoPanel = new BackgroundPanel("background.jpg");
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        userInfoPanel = PanelUtils.createBackgroundPanel("background.jpg");
 
         addNavigateToProjectsButton();
 

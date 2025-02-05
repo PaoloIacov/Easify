@@ -62,9 +62,7 @@ public class CliConversationView implements ConversationView {
         this.conversationList = new ArrayList<>(conversations); // ✅ Aggiorna la lista locale
 
         System.out.println(localizationManager.getText("conversation.list.title"));
-        for (int i = 0; i < conversationList.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + conversationList.get(i).getDescription()); // ✅ Stampa il nome invece dell'oggetto
-        }
+        printConversationList(conversations);
     }
 
     @Override
@@ -93,10 +91,7 @@ public class CliConversationView implements ConversationView {
         }
 
         System.out.println(localizationManager.getText("conversation.select.prompt"));
-
-        for (int i = 0; i < conversationList.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + conversationList.get(i).getDescription()); // ✅ Stampa il nome invece dell'oggetto
-        }
+        printConversationList(conversationList);
 
         System.out.print(localizationManager.getText("conversation.select.index") + ": ");
 
@@ -138,4 +133,11 @@ public class CliConversationView implements ConversationView {
     public void setActionHandler(ActionHandler handler) {
         throw new UnsupportedOperationException("CLI view does not support action handlers");
     }
+
+    private void printConversationList(List<ConversationBean> conversations) {
+        for (int i = 0; i < conversations.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + conversations.get(i).getDescription());
+        }
+    }
+
 }
