@@ -59,12 +59,12 @@ public class ConversationDAO {
     }
 
     public List<Conversation> getConversationsForProject(String projectName) throws SQLException {
-        String query = "SELECT id, description, projectName FROM Conversations WHERE projectName = ?";
+        String query = "SELECT id, description, projectName FROM Conversation WHERE projectName = ?";
         return getConversations(query, projectName);
     }
 
     public List<Conversation> getConversationsForEmployee(String username) throws SQLException {
-        String query = "SELECT id, description, projectName FROM Conversations WHERE username = ?";
+        String query = "SELECT id, description, projectName FROM Conversation WHERE username = ?";
         return getConversations(query, username);
     }
 
@@ -94,15 +94,15 @@ public class ConversationDAO {
     }
 
 
-    public void addUserToConversation(long conversationID, String username) {
-        String query = "INSERT INTO ConversationEmployees (conversationID, username) VALUES (?, ?)";
-        executeConversationUpdate(query, conversationID, username, "Error adding employee to conversation with ID:");
+    public void addUserToConversation(Long conversationID, String participant) {
+        String query = "INSERT INTO ConversationParticipation (conversationID, participant) VALUES (?, ?)";
+        executeConversationUpdate(query, conversationID, participant, "Error adding employee to conversation with ID:");
     }
 
 
-    public void removeUserFromConversation(long conversationID, String username) {
-        String query = "DELETE FROM ConversationEmployees WHERE conversationID = ? AND username = ?";
-        executeConversationUpdate(query, conversationID, username, "Error removing employee from conversation with ID:");
+    public void removeUserFromConversation(Long conversationID, String participant) {
+        String query = "DELETE FROM ConversationParticipation WHERE conversationID = ? AND participant = ?";
+        executeConversationUpdate(query, conversationID, participant, "Error removing employee from conversation with ID:");
     }
 
 

@@ -88,5 +88,4 @@ public abstract class ConversationViewDecorator implements ConversationView {
         return decoratedConversationView.getMessageInput();
     }
 
-
 }

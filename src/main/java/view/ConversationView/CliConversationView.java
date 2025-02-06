@@ -139,5 +139,4 @@ public class CliConversationView implements ConversationView {
             System.out.println("[" + (i + 1) + "] " + conversations.get(i).getDescription());
         }
     }
-
 }

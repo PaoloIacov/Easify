@@ -145,20 +145,21 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         JPanel messageItem = new JPanel();
         messageItem.setLayout(new BoxLayout(messageItem, BoxLayout.Y_AXIS));
         messageItem.setBorder(new EmptyBorder(10, 10, 10, 10));
-        messageItem.setMaximumSize(new Dimension(400, 80));
-
-        JLabel messageLabel = new JLabel("<html><b>" + sender + ":</b><br/><p style='width: 250px;'>" + message + "</p></html>");
-        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageItem.setMaximumSize(new Dimension(450, 100));
 
         if (isReceived) {
-            messageItem.setBackground(new Color(220, 248, 198)); // Verde chiaro (come WhatsApp ricevuto)
-            messageLabel.setForeground(Color.BLACK);
+            messageItem.setBackground(new Color(220, 248, 198));
             messageItem.setAlignmentX(Component.LEFT_ALIGNMENT);
         } else {
-            messageItem.setBackground(new Color(187, 222, 251)); // Blu chiaro (come WhatsApp inviato)
-            messageLabel.setForeground(Color.BLACK);
+            messageItem.setBackground(new Color(187, 222, 251));
             messageItem.setAlignmentX(Component.RIGHT_ALIGNMENT);
         }
+
+        JLabel messageLabel = new JLabel(
+                "<html><b>" + sender + ":</b><br/><p style='width: 300px;'>" + message + "</p></html>"
+        );
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageLabel.setForeground(Color.BLACK);
 
         messageItem.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 1, true),
@@ -166,8 +167,19 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         ));
 
         messageItem.add(messageLabel);
-        messagePanel.add(messageItem);
-        messagePanel.add(Box.createRigidArea(new Dimension(0, 8))); // Spaziatura tra messaggi
+
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BorderLayout());
+        wrapper.setOpaque(false);
+
+        if (isReceived) {
+            wrapper.add(messageItem, BorderLayout.WEST);
+        } else {
+            wrapper.add(messageItem, BorderLayout.EAST);
+        }
+
+        messagePanel.add(wrapper);
+        messagePanel.add(Box.createRigidArea(new Dimension(0, 8)));
 
         refresh();
     }

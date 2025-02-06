@@ -1,3 +1,5 @@
+package testing;
+
 import model.bean.CredentialsBean;
 import model.converter.CredentialsConverter;
 import model.dao.ConnectionFactory;

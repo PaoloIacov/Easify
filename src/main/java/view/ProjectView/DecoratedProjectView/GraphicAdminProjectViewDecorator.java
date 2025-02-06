@@ -76,9 +76,6 @@ public class GraphicAdminProjectViewDecorator extends ProjectViewDecorator {
         return adminHeader;
     }
 
-    /**
-     * **Dropdown menu per eliminare un progetto**
-     */
     public String removeProject(List<String> projectNames) {
         if (projectNames.isEmpty()) {
             showError(localizationManager.getText("admin.remove.no.projects"));

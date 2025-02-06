@@ -13,7 +13,6 @@ public class ConnectionFactory {
 
     private static Properties properties;
 
-    // Blocco statico per caricare le proprietà al momento del caricamento della classe
     static {
         try (InputStream input = ConnectionFactory.class.getClassLoader().getResourceAsStream("database.properties")) {
             properties = new Properties();
@@ -22,12 +21,10 @@ public class ConnectionFactory {
             }
             properties.load(input);
         } catch (IOException e) {
-            e.printStackTrace();
             throw new ExceptionInInitializerError("Errore durante il caricamento delle proprietà del database.");
         }
     }
 
-    // Metodo per ottenere la connessione generica
     public static Connection getConnection() throws SQLException {
         String connectionUrl = properties.getProperty("CONNECTION_URL");
         String user = properties.getProperty("LOGIN_USER");
