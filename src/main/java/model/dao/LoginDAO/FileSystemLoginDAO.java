@@ -32,7 +32,7 @@ public class FileSystemLoginDAO implements LoginDAO {
 
                     if (storedUsername.equals(credentials.getUsername()) &&
                             storedPassword.equals(credentials.getPassword())) {
-                        return true; // Credenziali valide
+                        return true;
                     }
                 }
             }
@@ -40,6 +40,6 @@ public class FileSystemLoginDAO implements LoginDAO {
             throw new SQLException("Error reading login file: " + e.getMessage());
         }
 
-        return false; // Credenziali non valide
+        return false;
     }
 }

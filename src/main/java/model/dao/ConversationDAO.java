@@ -64,9 +64,16 @@ public class ConversationDAO {
     }
 
     public List<Conversation> getConversationsForEmployee(String username) throws SQLException {
-        String query = "SELECT id, description, projectName FROM Conversation WHERE username = ?";
+        String query = """
+        SELECT c.id, c.description, c.projectName
+        FROM Conversation c
+        JOIN ConversationParticipation cp ON c.id = cp.conversationID
+        WHERE cp.participant = ?;
+    """;
+
         return getConversations(query, username);
     }
+
 
     public List<Conversation> getConversationsForProjectManager(String username) throws SQLException {
         List<Conversation> conversations = new ArrayList<>();

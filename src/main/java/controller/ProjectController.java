@@ -225,7 +225,6 @@ public class ProjectController implements ActionHandler {
                     .map(ProjectConverter::toBean)
                     .toList();
 
-            //Obtain the names for the dropdown menu
             List<String> projectNames = projectBeans.stream()
                     .map(ProjectBean::getName)
                     .toList();
@@ -233,9 +232,9 @@ public class ProjectController implements ActionHandler {
             String selectedProjectName;
             switch (projectView) {
                 case GraphicAdminProjectViewDecorator adminView ->
-                    selectedProjectName = adminView.removeProject(projectNames);
-
-                case CliAdminProjectViewDecorator adminView -> selectedProjectName = adminView.removeProject(projectNames);
+                        selectedProjectName = adminView.removeProject(projectNames);
+                case CliAdminProjectViewDecorator adminView ->
+                        selectedProjectName = adminView.removeProject(projectNames);
                 default -> {
                     projectView.showError(localizationManager.getText("admin.remove.project.not.allowed"));
                     return;
@@ -255,12 +254,24 @@ public class ProjectController implements ActionHandler {
                 return;
             }
 
+            // Elimina il progetto
             projectDAO.deleteProject(projectToDelete.getName());
+
+            // ✅ Mostra il messaggio di successo
+            projectView.showSuccess(localizationManager.getText("admin.remove.project.success"));
+
+            // ✅ Refresh della lista progetti
+            List<Project> updatedProjects = projectDAO.getAllProjects();
+            List<ProjectBean> updatedProjectBeans = updatedProjects.stream()
+                    .map(ProjectConverter::toBean)
+                    .toList();
+            projectView.displayProjects(updatedProjectBeans);
 
         } catch (Exception e) {
             projectView.showError(localizationManager.getText("admin.remove.project.error") + ": " + e.getMessage());
         }
     }
+
 
     private void navigateToConversations() {
        try {

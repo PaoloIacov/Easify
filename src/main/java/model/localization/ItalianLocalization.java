@@ -29,7 +29,7 @@ public class ItalianLocalization implements Localization {
         translations.put("admin.menu.options", "1. Visualizza tutti gli utenti\n2. Aggiungi utente\n3. Rimuovi utente\n4. Vai ai progetti\n5. Indietro\n");
         translations.put("admin.users.title", "Lista Utenti");
         translations.put("admin.users.empty", "Nessun utente trovato");
-        translations.put("admin.add.user", "Aggiungi Utente");
+        translations.put("admin.add.user", "Aggiungere Utente");
         translations.put("user.username", "Nome Utente");
         translations.put("user.password", "Password");
         translations.put("user.name", "Nome");
@@ -132,6 +132,8 @@ public class ItalianLocalization implements Localization {
         translations.put("admin.option.add.project", "Aggiungi Progetto");
         translations.put("admin.option.delete.project", "Elimina Progetto");
         translations.put("admin.remove.project.success", "Progetto eliminato con successo");
+        translations.put("admin.remove.project.prompt", "Seleziona il progetto da eliminare");
+        translations.put("admin.remove.project.title", "Rimozione progetto");
 
         // Conversation
         translations.put("conversation.view.title", "Vista Conversazioni");
@@ -188,6 +190,12 @@ public class ItalianLocalization implements Localization {
         translations.put("conversation.menu.pm.title", "\n=== Menu conversazioni PM ===");
         translations.put("conversation.menu.pm.options", "1) Visualizza Messaggi\n2) Invia Messaggio\n3) Indietro\n4)Aggiungi conversazione\n5)Elimina conversazione\n6)Aggiungi un utente a una conversazione\n7)Rimuovi un utente da una conversazione");
         translations.put("conversation.add.user.select", "Inserisci l'indice dell'utente che vuoi aggiungere");
+        translations.put("conversation.remove.user.empty", "Nessun utente trovato in questa conversazione");
+        translations.put("add.user.title", "Aggiungi Utente");
+        translations.put("admin.remove.user.title","Rimozione utente");
+        translations.put("conversation.delete.title", "Elimina Conversazione");
+        translations.put("conversation.add.user.title", "Aggiunta Utente");
+        translations.put("conversation.remove.user.title", "Rimozione Utente");
     }
 
     @Override

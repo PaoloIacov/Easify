@@ -182,7 +182,7 @@ public class ConversationController implements ActionHandler {
 
     private void handleAddConversation() {
         try {
-            String description = conversationView.getInput(localizationManager.getText("conversation.add.prompt.description"));
+            String description = conversationView.getInput("conversation.add.prompt.description");
             if (description == null || description.trim().isEmpty()) {
                 conversationView.showError(localizationManager.getText("conversation.add.error.empty.description"));
                 return;
@@ -321,7 +321,7 @@ public class ConversationController implements ActionHandler {
             List<String> usernames = users.stream().map(User::getUsername).toList();
 
             if (usernames.isEmpty()) {
-                conversationView.showError("conversation.remove.user.empty");
+                conversationView.showError(localizationManager.getText("conversation.remove.user.empty"));
                 return;
             }
 

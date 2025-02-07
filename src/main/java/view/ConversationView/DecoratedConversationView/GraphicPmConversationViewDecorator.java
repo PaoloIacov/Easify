@@ -143,18 +143,6 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
             removeEmployeeButton.setEnabled(true);
         });
 
-        addEmployeeButton.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction("6");
-            }
-        });
-
-        removeEmployeeButton.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction("7");
-            }
-        });
-
         topPanel.add(titleLabel);
         topPanel.add(selectButton);
 
@@ -220,7 +208,7 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
         } else {
             JOptionPane.showMessageDialog(null,
                     localizationManager.getText("conversation.add.user.cancelled"),
-                    localizationManager.getText("info.title"),
+                    localizationManager.getText("error.generic"),
                     JOptionPane.INFORMATION_MESSAGE);
             return null;
         }
@@ -251,7 +239,7 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
         } else {
             JOptionPane.showMessageDialog(null,
                     localizationManager.getText("conversation.remove.user.cancelled"),
-                    localizationManager.getText("info.title"),
+                    localizationManager.getText("error.generic"),
                     JOptionPane.INFORMATION_MESSAGE);
             return null;
         }
