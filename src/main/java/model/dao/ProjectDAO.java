@@ -129,4 +129,22 @@ public class ProjectDAO {
         return users;
     }
 
+    public List<User> getUsersNotInProject(String projectName) {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT u.username, u.password, u.name, u.surname, u.role " +
+                "FROM User u " +
+                "WHERE u.username NOT IN (SELECT pa.username FROM ProjectAssignments pa WHERE pa.projectName = ?) AND u.role = 1"; // Solo Employee (role = 1)
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, projectName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                users.addAll(DaoUtils.extractUsersFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore durante il recupero degli utenti non assegnati al progetto " + projectName);
+        }
+
+        return users;
+    }
+
 }

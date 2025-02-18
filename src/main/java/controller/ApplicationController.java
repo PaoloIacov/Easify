@@ -15,6 +15,7 @@ import view.ProjectView.DecoratedProjectView.*;
 import view.View;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -43,7 +44,7 @@ public class ApplicationController {
             System.out.println(localizationManager.getText("interface.choose"));
             System.out.println("1) " + localizationManager.getText("interface.graphic"));
             System.out.println("2) " + localizationManager.getText("interface.cli"));
-            System.out.print(localizationManager.getText("interface.prompt") + ": ");
+            System.out.print(localizationManager.getText("interface.prompt"));
 
             String choice = scanner.nextLine().trim();
             switch (choice) {
@@ -56,19 +57,23 @@ public class ApplicationController {
     }
 
     public void navigateToLogin() {
-        LoginView loginView = createLoginView();
-        viewStack.push(loginView);
-
+        LoginView loginView;
         LoginController loginController = new LoginController(
-                loginView,
                 new DbmsLoginDAO(connection),
                 new UserDAO(connection),
                 this
         );
-        loginController.start();
+
+        if (currentInterface.equals(GRAPHIC)) {
+            loginView = new GraphicLoginView(localizationManager, loginController);
+        } else {
+            loginView = new CliLoginView(localizationManager, loginController);
+        }
+        loginView.display();
+        viewStack.push(loginView);
     }
 
-    public void handleRoleBasedNavigation(CredentialsBean loggedInUser) {
+    public void handleRoleBasedNavigation(CredentialsBean loggedInUser) throws SQLException {
         if (loggedInUser == null) {
             System.out.println(localizationManager.getText("login.failed"));
             navigateToLogin();
@@ -86,31 +91,23 @@ public class ApplicationController {
         }
     }
 
-    public void navigateToAdmin(CredentialsBean loggedInUser) {
-        AdminView adminView = createAdminView();
-        AdminController adminController = new AdminController(adminView, connection, this, localizationManager, loggedInUser);
-        adminController.start();
-        if (adminView.isGraphic()) {
-            adminView.setActionHandler(adminController);
+    public void navigateToAdmin(CredentialsBean loggedInUser) throws SQLException {
+        AdminView adminView;
+        AdminController adminController = new AdminController(connection, this, localizationManager, loggedInUser);
+
+        if (currentInterface.equals(GRAPHIC)) {
+            adminView = new GraphicAdminView(localizationManager, adminController);
+        } else {
+            adminView = new CliAdminView(localizationManager, adminController);
         }
+        adminView.display();
         viewStack.push(adminView);
     }
 
     public void navigateToProject(CredentialsBean loggedInUser) {
         ProjectView projectView;
 
-        if (currentInterface.equals(GRAPHIC)) {
-            projectView = loggedInUser.getRole() == 3
-                    ? new GraphicAdminProjectViewDecorator(new GraphicProjectView(localizationManager), localizationManager)
-                    : new GraphicProjectView(localizationManager);
-        } else {
-            projectView = loggedInUser.getRole() == 3
-                    ? new CliAdminProjectViewDecorator(new CliProjectView(localizationManager), localizationManager)
-                    : new CliProjectView(localizationManager);
-        }
-
         ProjectController projectController = new ProjectController(
-                projectView,
                 new ProjectDAO(connection),
                 localizationManager,
                 this,
@@ -118,7 +115,17 @@ public class ApplicationController {
                 new UserDAO(connection)
         );
 
-        projectController.start(loggedInUser.getUsername());
+        if (currentInterface.equals(GRAPHIC)) {
+            projectView = loggedInUser.getRole() == 3
+                    ? new GraphicAdminProjectViewDecorator(new GraphicProjectView(localizationManager, projectController, loggedInUser, this), localizationManager, projectController, loggedInUser)
+                    : new GraphicProjectView(localizationManager, projectController, loggedInUser, this);
+        } else {
+            projectView = loggedInUser.getRole() == 3
+                    ? new CliAdminProjectViewDecorator(new CliProjectView(localizationManager, projectController, loggedInUser), localizationManager)
+                    : new CliProjectView(localizationManager, projectController, loggedInUser);
+        }
+
+        projectView.display();
         viewStack.push(projectView);
         System.out.println("Using ProjectView: " + projectView.getClass().getSimpleName());
     }
@@ -126,26 +133,27 @@ public class ApplicationController {
     public void navigateToConversation(CredentialsBean loggedInUser, String projectName) {
         ConversationView conversationView;
 
-        if (currentInterface.equals(GRAPHIC)) {
-            conversationView = projectName != null
-                    ? new GraphicPmConversationViewDecorator(new GraphicConversationView(localizationManager), localizationManager)
-                    : new GraphicConversationView(localizationManager);
-        } else {
-            conversationView = projectName != null
-                    ? new CliPmConversationViewDecorator(new CliConversationView(localizationManager), localizationManager)
-                    : new CliConversationView(localizationManager);
-        }
-
         ConversationController conversationController = new ConversationController(
-                conversationView,
                 new ConversationDAO(connection),
                 new MessageDAO(connection),
                 localizationManager,
                 loggedInUser,
-                this
+                this,
+                projectName
         );
 
-        conversationController.start(projectName);
+        if (currentInterface.equals(GRAPHIC)) {
+            conversationView = projectName != null
+                    ? new GraphicPmConversationViewDecorator(new GraphicConversationView(localizationManager, conversationController), localizationManager, conversationController)
+                    : new GraphicConversationView(localizationManager, conversationController);
+        } else {
+            conversationView = projectName != null
+                    ? new CliPmConversationViewDecorator(new CliConversationView(localizationManager, conversationController), localizationManager)
+                    : new CliConversationView(localizationManager, conversationController);
+        }
+
+
+
         viewStack.push(conversationView);
     }
 
@@ -156,17 +164,5 @@ public class ApplicationController {
             View previousView = viewStack.peek();
             previousView.display();
         }
-    }
-
-    private LoginView createLoginView() {
-        return currentInterface.equals(GRAPHIC)
-                ? new GraphicLoginView(localizationManager)
-                : new CliLoginView(localizationManager);
-    }
-
-    private AdminView createAdminView() {
-        return currentInterface.equals(GRAPHIC)
-                ? new GraphicAdminView(localizationManager)
-                : new CliAdminView(localizationManager);
     }
 }

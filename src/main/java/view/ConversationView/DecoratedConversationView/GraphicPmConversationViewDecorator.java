@@ -1,7 +1,9 @@
 package view.ConversationView.DecoratedConversationView;
 
-import controller.ActionHandler;
+import controller.ConversationController;
+import controller.exceptions.NullFieldException;
 import model.bean.ConversationBean;
+import model.bean.UserBean;
 import model.localization.LocalizationManager;
 import view.ConversationView.ConversationView;
 import view.ConversationView.GraphicConversationView;
@@ -10,40 +12,33 @@ import view.PanelUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GraphicPmConversationViewDecorator extends ConversationViewDecorator {
-    private ActionHandler actionHandler;
-    private final LocalizationManager localizationManager;
-    private List <ConversationBean> conversationList;
-    private ConversationBean selectedConversation;
-    private final Map<String, JButton> addEmployeeButtons = new HashMap<>();
-    private final Map<String, JButton> removeEmployeeButtons = new HashMap<>();
 
-    public GraphicPmConversationViewDecorator(ConversationView conversationView, LocalizationManager localizationManager) {
+    private final LocalizationManager localizationManager;
+    private final ConversationController conversationController;
+    private ConversationBean selectedConversation;
+    private final Map<String, JButton> addUserButtons = new HashMap<>();
+    private final Map<String, JButton> removeUserButtons = new HashMap<>();
+    private static final String GENERIC_ERROR = "generic.error";
+
+    public GraphicPmConversationViewDecorator(ConversationView conversationView, LocalizationManager localizationManager, ConversationController conversationController) {
         super(conversationView);
         this.localizationManager = localizationManager;
+        this.conversationController = conversationController;
         replaceHeaderWithPmHeader();
         replaceConversationListPanel();
     }
 
-    @Override
-    public void displayConversations(List<ConversationBean> conversations) {
-        conversationList = conversations;
-        replaceConversationListPanel();
-    }
-
-    private JButton createButton(String text, String actionCommand) {
+    private JButton createButton(String text, Runnable action) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setPreferredSize(new Dimension(120, 30));
-        button.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction(actionCommand);
-            }
-        });
+        button.addActionListener(_ -> action.run());
         return button;
     }
 
@@ -58,40 +53,48 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
                     rightPanel.remove(oldHeader);
                 }
 
-                // Aggiunge il nuovo header per PM/Admin
                 JPanel pmHeader = createPmConversationHeader();
                 rightPanel.add(pmHeader, BorderLayout.NORTH);
 
-                // Aggiorna la UI
                 rightPanel.revalidate();
                 rightPanel.repaint();
             } else {
-                System.err.println("Errore: rightPanel è null.");
+                System.err.println("Error: rightPanel is null.");
             }
         }
     }
 
     private JPanel createPmConversationHeader() {
-        JPanel pmHeader = PanelUtils.createHeaderPanel();
+        JPanel pmHeader = new JPanel(new GridLayout(1, 3, 15, 10)); // Griglia con 3 colonne, spaziatura tra bottoni
+        pmHeader.setBackground(Color.WHITE);
+        pmHeader.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20)); // Padding attorno al pannello
 
-        JButton addConversationButton = createButton(localizationManager.getText("conversation.button.create"), "4");
-        PanelUtils.addButtonToPanel(pmHeader, addConversationButton, 0);
+        JButton addConversationButton = createButton(localizationManager.getText("conversation.button.create"), this::addConversation);
+        JButton deleteConversationButton = createButton(localizationManager.getText("conversation.button.delete"), this::removeConversation);
+        JButton backButton = createButton(localizationManager.getText("generic.back"), this::back);
 
-        JButton deleteConversationButton = createButton(localizationManager.getText("conversation.button.delete"), "5");
-        PanelUtils.addButtonToPanel(pmHeader, deleteConversationButton, 1);
+        // Imposta dimensioni minime per evitare il taglio del testo
+        Dimension buttonSize = new Dimension(160, 40);
+        addConversationButton.setPreferredSize(buttonSize);
+        deleteConversationButton.setPreferredSize(buttonSize);
+        backButton.setPreferredSize(buttonSize);
 
-        JButton backButton = createButton(localizationManager.getText("generic.back"), "3");
-        PanelUtils.addButtonToPanel(pmHeader, backButton, 2);
+        pmHeader.add(addConversationButton);
+        pmHeader.add(deleteConversationButton);
+        pmHeader.add(backButton);
 
         return pmHeader;
     }
 
+
     private void replaceConversationListPanel() {
+        try {
         if (decoratedConversationView instanceof GraphicConversationView graphicView) {
             JPanel leftPanel = graphicView.getLeftPanel();
 
             if (leftPanel != null) {
                 leftPanel.removeAll();
+                List<ConversationBean> conversationList = conversationController.getConversationsForUser();
                 if (conversationList != null) {
                     for (ConversationBean conversation : conversationList) {
                         addPmConversationItem(conversation, leftPanel);
@@ -101,12 +104,13 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
                 leftPanel.repaint();
             }
         }
+        } catch (SQLException e) {
+            showError(localizationManager.getText(GENERIC_ERROR));
+        }
     }
 
     private void addPmConversationItem(ConversationBean conversation, JPanel conversationListPanel) {
-        JPanel conversationItem = new JPanel();
-        conversationItem.setLayout(new BoxLayout(conversationItem, BoxLayout.Y_AXIS));
-        conversationItem.setBackground(new Color(42, 46, 54));
+        JPanel conversationItem = PanelUtils.createStyledPanel();
         conversationItem.setMaximumSize(new Dimension(300, 80));
         conversationItem.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -116,31 +120,25 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
         JLabel titleLabel = new JLabel("<html><b>" + conversation.getDescription() + "</b></html>");
         titleLabel.setForeground(Color.WHITE);
 
-        JButton selectButton = createButton("Select", "1");
-        selectButton.addActionListener(_ -> {
-            selectedConversation = conversation;
-            displayMessages(null);
-        });
-        JButton addEmployeeButton = createButton("Add User", "6");
-        JButton removeEmployeeButton = createButton("Remove User", "7");
+        JButton selectButton = createButton(localizationManager.getText("generic.select"), () -> selectConversation(conversation));
+        JButton addUserButton = createButton(localizationManager.getText("conversation.button.add.user"), this::addUserToConversation);
+        JButton removeUserButton = createButton(localizationManager.getText("conversation.button.remove.user"), this::removeUserFromConversation);
 
-        addEmployeeButtons.put(conversation.getDescription(), addEmployeeButton);
-        removeEmployeeButtons.put(conversation.getDescription(), removeEmployeeButton);
+        addUserButtons.put(conversation.getDescription(), addUserButton);
+        removeUserButtons.put(conversation.getDescription(), removeUserButton);
 
-        addEmployeeButton.setEnabled(false);
-        removeEmployeeButton.setEnabled(false);
+        addUserButton.setEnabled(false);
+        removeUserButton.setEnabled(false);
 
         selectButton.addActionListener(_ -> {
             selectedConversation = conversation;
-            displayMessages(null);
+            displayMessages(selectedConversation);
 
-            // Disable all buttons first
-            addEmployeeButtons.values().forEach(button -> button.setEnabled(false));
-            removeEmployeeButtons.values().forEach(button -> button.setEnabled(false));
+            addUserButtons.values().forEach(button -> button.setEnabled(false));
+            removeUserButtons.values().forEach(button -> button.setEnabled(false));
 
-            // Enable buttons for the selected conversation
-            addEmployeeButton.setEnabled(true);
-            removeEmployeeButton.setEnabled(true);
+            addUserButton.setEnabled(true);
+            removeUserButton.setEnabled(true);
         });
 
         topPanel.add(titleLabel);
@@ -148,8 +146,8 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomPanel.setBackground(new Color(42, 46, 54));
-        bottomPanel.add(addEmployeeButton);
-        bottomPanel.add(removeEmployeeButton);
+        bottomPanel.add(addUserButton);
+        bottomPanel.add(removeUserButton);
 
         conversationItem.add(topPanel);
         conversationItem.add(bottomPanel);
@@ -159,6 +157,158 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
 
         conversationListPanel.revalidate();
         conversationListPanel.repaint();
+    }
+
+    private void selectConversation(ConversationBean conversation) {
+        this.selectedConversation = conversation;
+        displayMessages(selectedConversation);
+    }
+
+    private void addConversation() {
+        try {
+            String description = JOptionPane.showInputDialog(localizationManager.getText("conversation.add.prompt.description"));
+            if (description != null && !description.trim().isEmpty()) {
+                conversationController.addConversation(description);
+                displayConversations();
+            }
+        } catch (NullFieldException e) {
+            showError(localizationManager.getText("conversation.add.error"));
+        } catch (SQLException e) {
+            showError(localizationManager.getText(GENERIC_ERROR));
+        }
+    }
+
+    private void removeConversation() {
+        try {
+            List<ConversationBean> conversationList = conversationController.getConversationsForUser();
+            List<String> conversationDescriptions = conversationList.stream()
+                    .map(ConversationBean::getDescription)
+                    .toList();
+
+            String selectedConvo = showDeleteConversationDialog(conversationDescriptions);
+            if (selectedConversation != null) {
+                conversationController.deleteConversation(selectedConvo);
+                displayConversations();
+            }
+        } catch (SQLException e) {
+            showError(localizationManager.getText(GENERIC_ERROR));
+        }
+    }
+
+    private void addUserToConversation() {
+        if (selectedConversation == null) {
+            showError(localizationManager.getText("conversation.no.selected"));
+            return;
+        }
+
+        try {
+            // Ottieni gli utenti non presenti nella conversazione
+            List<String> availableUsers = conversationController.getUsersNotInConversation(selectedConversation.getConversationID())
+                    .stream()
+                    .map(UserBean::getUsername)
+                    .toList();
+
+            if (availableUsers.isEmpty()) {
+                showError(localizationManager.getText("conversation.add.user.empty"));
+                return;
+            }
+
+            // Mostra il dropdown menu per selezionare un utente
+            String selectedUser = showAddUserDialog(availableUsers);
+
+            if (selectedUser != null) {
+                conversationController.addUserToConversation(selectedConversation.getConversationID(), selectedUser);
+                showSuccess(localizationManager.getText("conversation.add.user.success"));
+            }
+        } catch (RuntimeException e) {
+            showError(localizationManager.getText("conversation.add.user.error") + ": " + e.getMessage());
+        }
+    }
+
+    private void removeUserFromConversation() {
+        if (selectedConversation == null) {
+            showError(localizationManager.getText("conversation.no.selected"));
+            return;
+        }
+
+        try {
+            // Ottieni gli utenti presenti nella conversazione
+            List<String> usersInConversation = conversationController.getUsersInConversation(selectedConversation.getConversationID())
+                    .stream()
+                    .map(UserBean::getUsername)
+                    .toList();
+
+            if (usersInConversation.isEmpty()) {
+                showError(localizationManager.getText("conversation.remove.user.empty"));
+                return;
+            }
+
+            // Mostra il dropdown menu per selezionare un utente da rimuovere
+            String selectedUser = showRemoveUserDialog(usersInConversation);
+
+            if (selectedUser != null) {
+                conversationController.removeUserFromConversation(selectedConversation.getConversationID(), selectedUser);
+                showSuccess(localizationManager.getText("conversation.remove.user.success"));
+            }
+        } catch (RuntimeException e) {
+            showError(localizationManager.getText("conversation.remove.user.error") + ": " + e.getMessage());
+        }
+    }
+
+    public String showAddUserDialog(List<String> usernames) {
+        if (usernames == null || usernames.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    localizationManager.getText("conversation.add.user.empty"),
+                    localizationManager.getText("error.title"),
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return null;
+        }
+
+        JComboBox<String> userDropdown = new JComboBox<>(usernames.toArray(new String[0]));
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.add(new JLabel(localizationManager.getText("conversation.add.user.prompt")));
+        panel.add(userDropdown);
+
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                panel,
+                localizationManager.getText("conversation.add.user.title"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        return (result == JOptionPane.OK_OPTION) ? (String) userDropdown.getSelectedItem() : null;
+    }
+
+    public String showRemoveUserDialog(List<String> usernames) {
+        if (usernames == null || usernames.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    localizationManager.getText("conversation.remove.user.empty"),
+                    localizationManager.getText("error.title"),
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return null;
+        }
+
+        JComboBox<String> userDropdown = new JComboBox<>(usernames.toArray(new String[0]));
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.add(new JLabel(localizationManager.getText("conversation.remove.user.prompt")));
+        panel.add(userDropdown);
+
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                panel,
+                localizationManager.getText("conversation.remove.user.title"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        return (result == JOptionPane.OK_OPTION) ? (String) userDropdown.getSelectedItem() : null;
     }
 
     public String showDeleteConversationDialog(List<String> conversationDescriptions) {
@@ -176,76 +326,8 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if (result == JOptionPane.OK_OPTION) {
-            return (String) conversationComboBox.getSelectedItem();
-        }
-        return null;
+        return (result == JOptionPane.OK_OPTION) ? (String) conversationComboBox.getSelectedItem() : null;
     }
-
-
-    public String showAddUserDialog(List<String> usernames) {
-        if (usernames == null || usernames.isEmpty()) {
-            JOptionPane.showMessageDialog(null,
-                    localizationManager.getText("conversation.add.user.empty"),
-                    localizationManager.getText("error.title"),
-                    JOptionPane.ERROR_MESSAGE);
-            return null;
-        }
-
-        Object[] options = usernames.toArray();
-        String selectedUser = (String) JOptionPane.showInputDialog(
-                null,
-                localizationManager.getText("conversation.add.user.prompt"),
-                localizationManager.getText("conversation.add.user.title"),
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
-
-        if (selectedUser != null && !selectedUser.trim().isEmpty()) {
-            return selectedUser;
-        } else {
-            JOptionPane.showMessageDialog(null,
-                    localizationManager.getText("conversation.add.user.cancelled"),
-                    localizationManager.getText("error.generic"),
-                    JOptionPane.INFORMATION_MESSAGE);
-            return null;
-        }
-    }
-
-    public String showRemoveUserDialog(List<String> usernames) {
-        if (usernames == null || usernames.isEmpty()) {
-            JOptionPane.showMessageDialog(null,
-                    localizationManager.getText("conversation.remove.user.empty"),
-                    localizationManager.getText("error.title"),
-                    JOptionPane.ERROR_MESSAGE);
-            return null;
-        }
-
-        Object[] options = usernames.toArray();
-        String selectedUser = (String) JOptionPane.showInputDialog(
-                null,
-                localizationManager.getText("conversation.remove.user.prompt"),
-                localizationManager.getText("conversation.remove.user.title"),
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
-
-        if (selectedUser != null && !selectedUser.trim().isEmpty()) {
-            return selectedUser;
-        } else {
-            JOptionPane.showMessageDialog(null,
-                    localizationManager.getText("conversation.remove.user.cancelled"),
-                    localizationManager.getText("error.generic"),
-                    JOptionPane.INFORMATION_MESSAGE);
-            return null;
-        }
-    }
-
-
 
     @Override
     public boolean isGraphic() {
@@ -256,12 +338,4 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
     public ConversationBean getSelectedConversation() {
         return selectedConversation;
     }
-
-    @Override
-    public void setActionHandler(ActionHandler actionHandler) {
-        this.actionHandler = actionHandler;
-        decoratedConversationView.setActionHandler(actionHandler);
-    }
-
-
 }

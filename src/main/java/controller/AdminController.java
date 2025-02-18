@@ -7,165 +7,62 @@ import model.converter.UserConverter;
 import model.dao.UserDAO;
 import model.domain.User;
 import model.localization.LocalizationManager;
-import view.AdminView.AdminView;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-public class AdminController implements ActionHandler {
-
-    private final AdminView adminView;
+public class AdminController {
     private final UserDAO userDAO;
     private final ApplicationController applicationController;
     private final LocalizationManager localizationManager;
     private final CredentialsBean loggedInUser;
 
-    public AdminController(AdminView adminView, Connection connection, ApplicationController applicationController, LocalizationManager localizationManager, CredentialsBean loggedInUser) {
-        this.adminView = adminView;
+    public AdminController(Connection connection, ApplicationController applicationController, LocalizationManager localizationManager, CredentialsBean loggedInUser) {
         this.userDAO = new UserDAO(connection);
         this.applicationController = applicationController;
         this.localizationManager = localizationManager;
         this.loggedInUser = loggedInUser;
     }
 
-    public void start() {
-        if (!adminView.isGraphic()) {
-            runCliLoop();
-        } else {
-            adminView.display();
-            adminView.setActionHandler(this);
-            displayAllUsers();
-        }
+    public List<UserBean> getAllUsers() throws SQLException {
+        return userDAO.getAllUsers().stream().map(UserConverter::toBean).toList();
     }
 
-    private void runCliLoop() {
-        boolean running = true;
-        while (running) {
-            try {
-                adminView.display();
-                String choice = adminView.getInput("interface.prompt");
-                running = handleAction(choice);
-            } catch (Exception e) {
-                adminView.showError("An error occurred: " + e.getMessage());
-            }
+    public void addUser(UserBean userBean) throws NullFieldException, SQLException {
+        if (userBean == null) {
+            throw new NullFieldException("user.not.null", localizationManager);
         }
+
+        validateUserFields(userBean.getUsername(), userBean.getPassword(), userBean.getName(), userBean.getSurname(), userBean.getRole());
+
+        userDAO.addUser(
+                userBean.getUsername(),
+                userBean.getPassword(),
+                userBean.getName(),
+                userBean.getSurname(),
+                userBean.getRole()
+        );
     }
 
-    @Override
-    public boolean handleAction(String action) {
-        switch (action) {
-            case "1":
-                displayAllUsers();
-                break;
-            case "2":
-                handleaddUser();
-                break;
-            case "3":
-                handleRemoveUser();
-                break;
-            case "4":
-                navigateToProjectView();
-                break;
-            case "5":
-                applicationController.back();
-                return false;
-            case "6":
-                handleViewUserDetails();
-                break;
-            default:
-                adminView.showError("Invalid choice. Please try again.");
-                return true;
-        }
-        return true;
+    public void removeUser(String username) throws SQLException {
+        userDAO.deleteUser(username);
     }
 
-    private void displayAllUsers() {
-        try {
-            List<User> users = userDAO.getAllUsers();
-            List<UserBean> userBeans = users.stream().map(UserConverter::toBean).toList();
-            adminView.displayAllUsers(userBeans);
-        } catch (Exception e) {
-            adminView.showError("Failed to fetch users: " + e.getMessage());
-        }
+    public UserBean getUserDetails(String username) throws SQLException {
+        User user = userDAO.getUserByUsername(username);
+        return UserConverter.toBean(user);
     }
 
-    private void handleaddUser() {
-        try {
-            UserBean userBean = adminView.addUser();
-
-            if (userBean == null) {
-                throw new NullFieldException("user.not.null", localizationManager);
-            }
-
-            validateUserFields(userBean.getUsername(), userBean.getPassword(), userBean.getName(), userBean.getSurname(), userBean.getRole());
-
-            userDAO.addUser(
-                    userBean.getUsername(),
-                    userBean.getPassword(),
-                    userBean.getName(),
-                    userBean.getSurname(),
-                    userBean.getRole()
-            );
-
-            adminView.showSuccess(localizationManager.getText("generic.action.success"));
-            displayAllUsers();
-        } catch (NullFieldException e) {
-            adminView.showError(e.getMessageKey());
-        } catch (SQLException e) {
-            adminView.showError(localizationManager.getText("generic.error"));
-        } catch (Exception e) {
-            adminView.showError(localizationManager.getText("admin.add.error"));
-        }
+    public void navigateToProjectView() {
+        applicationController.navigateToProject(loggedInUser);
     }
 
-
-    private void handleRemoveUser() {
-        try {
-            List<String> usernames = userDAO.getAllUsers().stream()
-                    .map(User::getUsername)
-                    .toList();
-
-            if (usernames.isEmpty()) {
-                adminView.showError(localizationManager.getText("admin.remove.no.users"));
-                return;
-            }
-
-            String selectedUsername = adminView.removeUser(usernames);
-            if (selectedUsername != null) {
-                userDAO.deleteUser(selectedUsername);
-                adminView.showSuccess(localizationManager.getText("generic.action.success"));
-                displayAllUsers();
-            } else {
-                adminView.showError(localizationManager.getText("generic.action.cancelled"));
-            }
-        } catch (Exception e) {
-            adminView.showError(localizationManager.getText("admin.remove.error") + ": " + e.getMessage());
-        }
-    }
-
-
-    private void navigateToProjectView() {
-        try {
-            applicationController.navigateToProject(loggedInUser);
-        } catch (Exception e) {
-            adminView.showError("Failed to navigate to project view: " + e.getMessage());
-        }
-    }
-
-    private void handleViewUserDetails() {
-        try {
-            String username = adminView.getSelectedUsername();
-            User user = userDAO.getUserByUsername(username);
-            UserBean userBean = UserConverter.toBean(user);
-            adminView.displayUserDetails(userBean);
-        } catch (Exception e) {
-            adminView.showError(localizationManager.getText("admin.view.user.error") + ": " + e.getMessage());
-        }
+    public void back() {
+        applicationController.back();
     }
 
     private void validateUserFields(String username, String password, String name, String surname, int role) throws NullFieldException {
-        System.out.println("Validating fields");
         if (username == null || username.trim().isEmpty()) {
             throw new NullFieldException("field.username.not.null", localizationManager);
         }
@@ -182,5 +79,4 @@ public class AdminController implements ActionHandler {
             throw new NullFieldException("field.role.not.null", localizationManager);
         }
     }
-
 }

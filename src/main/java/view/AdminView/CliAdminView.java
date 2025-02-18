@@ -1,93 +1,135 @@
 package view.AdminView;
 
-import controller.ActionHandler;
+import controller.AdminController;
+import controller.exceptions.NullFieldException;
 import model.bean.UserBean;
 import model.localization.LocalizationManager;
 import view.GeneralUtils;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
 public class CliAdminView implements AdminView {
 
     private final LocalizationManager localizationManager;
+    private final AdminController adminController;
     private final Scanner scanner = new Scanner(System.in);
-    private String selectedUsername;
 
-    public CliAdminView(LocalizationManager localizationManager) {
+    public CliAdminView(LocalizationManager localizationManager, AdminController adminController) {
         this.localizationManager = localizationManager;
+        this.adminController = adminController;
     }
 
     @Override
     public void display() {
-        System.out.println("\n=== " + localizationManager.getText("admin.menu.title") + " ===");
-        System.out.println(localizationManager.getText("admin.menu.options"));
-    }
+        while (true) {
+            System.out.println("\n=== " + localizationManager.getText("admin.menu.title") + " ===");
+            System.out.println(localizationManager.getText("admin.menu.options"));
+            System.out.print(localizationManager.getText("interface.prompt"));
+            String action = scanner.nextLine().trim();
 
-    @Override
-    public void displayAllUsers(List<UserBean> users) {
-        System.out.println(localizationManager.getText("admin.users.title"));
-        if (users.isEmpty()) {
-            System.out.println(localizationManager.getText("admin.users.empty"));
-        } else {
-            int index = 1;
-            for (UserBean user : users) {
-                System.out.printf("[%d]%n", index++);
-                System.out.println(user);
+            switch (action) {
+                case "1" -> displayAllUsers();
+                case "2" -> addUser();
+                case "3" -> removeUser();
+                case "4" -> adminController.navigateToProjectView();
+                case "5" -> {
+                    back();
+                    return;
+                }
+                default -> showError(localizationManager.getText("error.invalid.option"));
             }
         }
     }
 
+    @Override
+    public void displayAllUsers() {
+        try {
+            List<UserBean> users = adminController.getAllUsers();
+            System.out.println("\n" + localizationManager.getText("admin.users.title"));
+
+            if (users.isEmpty()) {
+                System.out.println(localizationManager.getText("admin.users.empty"));
+            } else {
+                for (UserBean user : users) {
+                    System.out.println("-------------------------");
+                    System.out.println(localizationManager.getText("user.username") + ": " + user.getUsername());
+                    System.out.println(localizationManager.getText("user.name") + ": " + user.getName());
+                    System.out.println(localizationManager.getText("user.surname") + ": " + user.getSurname());
+                    System.out.println(localizationManager.getText("user.role") + ": " + getRoleName(user.getRole()));
+                }
+                System.out.println("-------------------------");
+            }
+        } catch (Exception e) {
+            showError(localizationManager.getText("admin.load.users.error"));
+        }
+    }
+
 
     @Override
-    public UserBean addUser() {
-        System.out.println("\n" + localizationManager.getText("admin.add.user"));
-        System.out.print(localizationManager.getText("user.username") + ": ");
-        String username = scanner.nextLine();
-        System.out.print(localizationManager.getText("user.password") + ": ");
-        String password = scanner.nextLine();
-        System.out.print(localizationManager.getText("user.name") + ": ");
-        String name = scanner.nextLine();
-        System.out.print(localizationManager.getText("user.surname") + ": ");
-        String surname = scanner.nextLine();
-        System.out.print(localizationManager.getText("user.role") + ": ");
-        int role = Integer.parseInt(scanner.nextLine());
+    public void addUser() {
+        try {
+            System.out.println("\n" + localizationManager.getText("admin.add.user"));
+            System.out.print(localizationManager.getText("user.username") + ": ");
+            String username = scanner.nextLine();
+            System.out.print(localizationManager.getText("user.password") + ": ");
+            String password = scanner.nextLine();
+            System.out.print(localizationManager.getText("user.name") + ": ");
+            String name = scanner.nextLine();
+            System.out.print(localizationManager.getText("user.surname") + ": ");
+            String surname = scanner.nextLine();
+            System.out.print(localizationManager.getText("user.role") + ": ");
+            int role = Integer.parseInt(scanner.nextLine());
 
-        return new UserBean(username, password, name, surname, role);
+            UserBean user = new UserBean(username, password, name, surname, role);
+            adminController.addUser(user);
+
+            showSuccess(localizationManager.getText("admin.add.user.success"));
+            displayAllUsers();
+        } catch (NumberFormatException e) {
+            showError(localizationManager.getText("admin.add.user.invalid.role"));
+        } catch (NullFieldException | SQLException e) {
+            showError(e.getMessage());
+        }
     }
 
     @Override
-    public String removeUser(List<String> usernames) {
-        if (usernames.isEmpty()) {
-            System.out.println(localizationManager.getText("admin.remove.user.empty"));
-            return null;
-        }
+    public void removeUser() {
+        try {
+            List<UserBean> users = adminController.getAllUsers();
+            List<String> usernames = users.stream().map(UserBean::getUsername).toList();
 
-        System.out.println("\n" + localizationManager.getText("admin.remove.user.list"));
-        GeneralUtils.printList(usernames, null);
+            if (usernames.isEmpty()) {
+                showError(localizationManager.getText("admin.remove.no.users"));
+                return;
+            }
 
-        int selectedIndex = -1;
-        while (selectedIndex < 1 || selectedIndex > usernames.size()) {
-            System.out.print(localizationManager.getText("admin.remove.user.select") + ": ");
-            try {
+            System.out.println("\n" + localizationManager.getText("admin.remove.user.list"));
+            GeneralUtils.printList(usernames, null);
+
+            int selectedIndex = -1;
+            while (selectedIndex < 1 || selectedIndex > usernames.size()) {
+                System.out.print(localizationManager.getText("admin.remove.user.select") + ": ");
                 selectedIndex = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println(localizationManager.getText("admin.input.invalid"));
+
             }
-        }
 
-        String selectedUser = usernames.get(selectedIndex - 1);
-        System.out.print(localizationManager.getText("admin.confirm") + " (yes/no): ");
-        String confirmation = scanner.nextLine().trim().toLowerCase();
+            String selectedUser = usernames.get(selectedIndex - 1);
+            System.out.print(localizationManager.getText("admin.confirm") + " (yes/no): ");
+            String confirmation = scanner.nextLine().trim().toLowerCase();
 
-        if (confirmation.equals("yes")) {
-            return selectedUser;
-        } else {
-            System.out.println(localizationManager.getText("admin.remove.cancelled"));
-            return null;
+            if (confirmation.equals("yes")) {
+                adminController.removeUser(selectedUser);
+                showSuccess(localizationManager.getText("generic.action.success"));
+                displayAllUsers();
+            } else {
+                System.out.println(localizationManager.getText("admin.remove.cancelled"));
+            }
+        } catch (SQLException e) {
+            showError(localizationManager.getText("admin.remove.error"));
         }
     }
-
 
     @Override
     public void displayUserDetails(UserBean user) {
@@ -109,16 +151,6 @@ public class CliAdminView implements AdminView {
     }
 
     @Override
-    public String getSelectedUsername() {
-        return selectedUsername;
-    }
-    @Override
-    public String getInput(String prompt) {
-        System.out.print(localizationManager.getText(prompt));
-        return scanner.nextLine();
-    }
-
-    @Override
     public void showSuccess(String message) {
         System.out.println("\n" + localizationManager.getText("generic.action.success"));
     }
@@ -130,12 +162,12 @@ public class CliAdminView implements AdminView {
 
     @Override
     public void back() {
-        System.out.println(localizationManager.getText("admin.back"));
+      adminController.back();
     }
 
     @Override
     public void refresh() {
-        System.out.println(localizationManager.getText("admin.refresh"));
+        displayAllUsers();
     }
 
     @Override
@@ -148,8 +180,8 @@ public class CliAdminView implements AdminView {
         return false;
     }
 
-    @Override
-    public void setActionHandler(ActionHandler handler) {
-        throw new UnsupportedOperationException("CLI does not support action handlers.");
+    public String getInput(String promptKey) {
+        System.out.print(localizationManager.getText(promptKey) + ": ");
+        return scanner.nextLine().trim();
     }
 }

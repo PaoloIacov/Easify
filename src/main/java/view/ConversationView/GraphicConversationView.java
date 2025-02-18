@@ -1,6 +1,6 @@
 package view.ConversationView;
 
-import controller.ActionHandler;
+import controller.ConversationController;
 import model.bean.ConversationBean;
 import model.bean.MessageBean;
 import model.localization.LocalizationManager;
@@ -15,7 +15,7 @@ import java.util.List;
 public class GraphicConversationView extends JFrame implements ConversationView {
 
     private final transient LocalizationManager localizationManager;
-    private transient ActionHandler actionHandler;
+    private final transient ConversationController conversationController;
     private JPanel conversationListPanel;
     private BackgroundPanel messagePanel;
     private JTextField messageInput;
@@ -23,9 +23,11 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     private JPanel rightPanel;
     private JPanel leftPanel;
 
-    public GraphicConversationView(LocalizationManager localizationManager) {
+    public GraphicConversationView(LocalizationManager localizationManager, ConversationController conversationController) {
         this.localizationManager = localizationManager;
+        this.conversationController = conversationController;
         initializeUI();
+        displayConversations();
     }
 
     private void initializeUI() {
@@ -41,15 +43,10 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         PanelUtils.setupMainLayout(this, leftPanel, rightPanel);
     }
 
-
-    private JButton createButton(String text, String actionCommand) {
+    private JButton createButton(String text, Runnable action) {
         JButton button = new JButton(text);
         button.setPreferredSize(new Dimension(150, 30));
-        button.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction(actionCommand);
-            }
-        });
+        button.addActionListener(_ -> action.run());
         return button;
     }
 
@@ -78,10 +75,8 @@ public class GraphicConversationView extends JFrame implements ConversationView 
 
     private JPanel createConversationHeader() {
         JPanel conversationHeader = PanelUtils.createHeaderPanel();
-
-        JButton backButton = createButton(localizationManager.getText("generic.back"), "3");
+        JButton backButton = createButton(localizationManager.getText("generic.back"), this::back);
         PanelUtils.addButtonToPanel(conversationHeader, backButton, 0);
-
         return conversationHeader;
     }
 
@@ -92,7 +87,7 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         messageInputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         messageInput = new JTextField();
-        JButton sendButton = createButton(localizationManager.getText("conversation.button.send"), "2");
+        JButton sendButton = createButton(localizationManager.getText("conversation.button.send"), this::sendMessage);
 
         messageInputPanel.add(messageInput, BorderLayout.CENTER);
         messageInputPanel.add(sendButton, BorderLayout.EAST);
@@ -101,10 +96,15 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     }
 
     @Override
-    public void displayConversations(List<ConversationBean> conversations) {
+    public void displayConversations() {
         conversationListPanel.removeAll();
-        for (ConversationBean conversation : conversations) {
-            addConversationItem(conversation);
+        try {
+            List<ConversationBean> conversations = conversationController.getConversationsForUser();
+            for (ConversationBean conversation : conversations) {
+                addConversationItem(conversation);
+            }
+        } catch (Exception e) {
+            showError(localizationManager.getText("conversation.error.loading"));
         }
         conversationListPanel.revalidate();
         conversationListPanel.repaint();
@@ -118,24 +118,29 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         JLabel titleLabel = new JLabel("<html><b>" + conversation.getDescription() + "</b></html>");
         titleLabel.setForeground(Color.WHITE);
 
-        JButton selectButton = createButton(localizationManager.getText("generic.select"), "1");
-        selectButton.addActionListener(_ -> {
-            selectedConversation = conversation;
-            displayMessages(null);
-            });
+        JButton selectButton = createButton(localizationManager.getText("generic.select"), () -> selectConversation(conversation));
 
         conversationItem.add(titleLabel);
         conversationItem.add(selectButton);
-
         conversationListPanel.add(conversationItem);
     }
 
+    private void selectConversation(ConversationBean conversation) {
+        this.selectedConversation = conversation;
+        displayMessages(selectedConversation);
+    }
+
     @Override
-    public void displayMessages(List<MessageBean> messages) {
+    public void displayMessages(ConversationBean selectedConversation) {
         messagePanel.removeAll();
-        if (messages != null) {
-            for (MessageBean message : messages) {
-                addMessageItem(message.getSenderUsername(), message.getContent(), !message.getSenderUsername().equals("You"));
+        if (selectedConversation != null) {
+            try {
+                List<MessageBean> messages = conversationController.getMessagesForConversation(selectedConversation.getConversationID());
+                for (MessageBean message : messages) {
+                    addMessageItem(message.getSenderUsername(), message.getContent(), !message.getSenderUsername().equals("You"));
+                }
+            } catch (Exception e) {
+                showError(localizationManager.getText("conversation.error.loading.messages"));
             }
         }
         refresh();
@@ -151,11 +156,11 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
         if (isReceived) {
-            messageItem.setBackground(new Color(220, 248, 198)); // Verde chiaro (come WhatsApp ricevuto)
+            messageItem.setBackground(new Color(220, 248, 198));
             messageLabel.setForeground(Color.BLACK);
             messageItem.setAlignmentX(Component.LEFT_ALIGNMENT);
         } else {
-            messageItem.setBackground(new Color(187, 222, 251)); // Blu chiaro (come WhatsApp inviato)
+            messageItem.setBackground(new Color(187, 222, 251));
             messageLabel.setForeground(Color.BLACK);
             messageItem.setAlignmentX(Component.RIGHT_ALIGNMENT);
         }
@@ -167,22 +172,37 @@ public class GraphicConversationView extends JFrame implements ConversationView 
 
         messageItem.add(messageLabel);
         messagePanel.add(messageItem);
-        messagePanel.add(Box.createRigidArea(new Dimension(0, 8))); // Spaziatura tra messaggi
+        messagePanel.add(Box.createRigidArea(new Dimension(0, 8)));
 
         refresh();
     }
 
     @Override
-    public void sendMessage(String message) {
-        if (message != null && !message.trim().isEmpty()) {
-            addMessageItem("You", message, false);
-            resetMessageInput();
+    public void sendMessage() {
+        if (selectedConversation != null) {
+            String message = getMessageInput();
+            if (message != null && !message.trim().isEmpty()) {
+                try {
+                    conversationController.sendMessage(selectedConversation.getConversationID(), message);
+                    addMessageItem("You", message, false);
+                    resetMessageInput();
+                } catch (Exception e) {
+                    showError(localizationManager.getText("conversation.error.sending"));
+                }
+            }
+        } else {
+            showError(localizationManager.getText("conversation.no.selected"));
         }
     }
 
     @Override
     public ConversationBean getSelectedConversation() {
         return selectedConversation;
+    }
+
+    @Override
+    public String getInput(String promptKey) {
+        return JOptionPane.showInputDialog(this, localizationManager.getText(promptKey));
     }
 
     @Override
@@ -193,11 +213,6 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     @Override
     public void showError(String message) {
         JOptionPane.showMessageDialog(this, message, localizationManager.getText("error.title"), JOptionPane.ERROR_MESSAGE);
-    }
-
-    @Override
-    public void setActionHandler(ActionHandler handler) {
-        this.actionHandler = handler;
     }
 
     @Override
@@ -221,9 +236,8 @@ public class GraphicConversationView extends JFrame implements ConversationView 
         return messageInput.getText();
     }
 
-    @Override
     public void resetMessageInput() {
-        messageInput.setText(" ");
+        messageInput.setText("");
     }
 
     @Override
@@ -232,8 +246,8 @@ public class GraphicConversationView extends JFrame implements ConversationView 
     }
 
     @Override
-    public String getInput(String promptKey) {
-        return JOptionPane.showInputDialog(this, localizationManager.getText(promptKey));
+    public void back() {
+        dispose();
     }
 
     public JPanel getRightPanel() {
@@ -242,10 +256,5 @@ public class GraphicConversationView extends JFrame implements ConversationView 
 
     public JPanel getLeftPanel() {
         return leftPanel;
-    }
-
-    @Override
-    public void back() {
-        dispose();
     }
 }

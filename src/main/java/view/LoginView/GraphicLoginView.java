@@ -1,5 +1,6 @@
 package view.LoginView;
 
+import controller.LoginController;
 import model.bean.CredentialsBean;
 import model.localization.LocalizationManager;
 
@@ -7,17 +8,19 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 public class GraphicLoginView extends JFrame implements LoginView {
 
     private final transient LocalizationManager localizationManager;
+    private final transient LoginController loginController;
     private final JTextField usernameField;
     private final JPasswordField passwordField;
     private final JButton submitButton;
 
-    public GraphicLoginView(LocalizationManager localizationManager) {
+    public GraphicLoginView(LocalizationManager localizationManager, LoginController loginController) {
         this.localizationManager = localizationManager;
+        this.loginController = loginController;
 
         setTitle(localizationManager.getText("login.title"));
         setSize(400, 600);
@@ -53,8 +56,24 @@ public class GraphicLoginView extends JFrame implements LoginView {
         mainPanel.add(submitButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        submitButton.addActionListener(_ -> handleLogin());
+
         setContentPane(mainPanel);
         setVisible(true);
+    }
+
+    private void handleLogin() {
+        try {
+            CredentialsBean credentials = getCredentialsInput();
+            credentials = loginController.authenticate(credentials);
+            showSuccess();
+            close();
+            loginController.navigateBasedOnRole(credentials);
+        } catch (SQLException e) {
+            showError(localizationManager.getText("error.database"));
+        } catch (Exception e) {
+            showError(localizationManager.getText("login.error"));
+        }
     }
 
     @Override
@@ -67,12 +86,12 @@ public class GraphicLoginView extends JFrame implements LoginView {
     @Override
     public void showError(String errorMessage) {
         JOptionPane.showMessageDialog(this,
-                localizationManager.getText("login.error"),
+                errorMessage,
                 localizationManager.getText("error.title"),
                 JOptionPane.ERROR_MESSAGE);
     }
 
-
+    @Override
     public void showSuccess() {
         JOptionPane.showMessageDialog(this,
                 localizationManager.getText("login.success"),
@@ -115,10 +134,6 @@ public class GraphicLoginView extends JFrame implements LoginView {
     @Override
     public boolean isGraphic() {
         return true;
-    }
-
-    public void setSubmitButtonListener(ActionListener listener) {
-        submitButton.addActionListener(listener);
     }
 
     private JTextField createTextField(String placeholder) {

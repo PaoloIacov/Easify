@@ -1,20 +1,21 @@
 package view.ConversationView;
 
-import controller.ActionHandler;
 import model.bean.ConversationBean;
-import model.bean.MessageBean;
 import view.View;
 
-import java.util.List;
+import java.sql.SQLException;
 
 public interface ConversationView extends View {
-    void displayConversations(List<ConversationBean> conversations);
-    void displayMessages(List<MessageBean> messages);
-    void sendMessage(String message);
+    void displayConversations() throws SQLException;
+
+    void displayMessages(ConversationBean selectedConversation);
+
+    void sendMessage();
+
     ConversationBean getSelectedConversation();
+
     void showSuccess(String message);
+
     String getMessageInput();
-    void resetMessageInput();
-    void setActionHandler(ActionHandler handler);
 }
 

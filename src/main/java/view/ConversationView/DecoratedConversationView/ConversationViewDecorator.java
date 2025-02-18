@@ -1,10 +1,8 @@
 package view.ConversationView.DecoratedConversationView;
 
 import model.bean.ConversationBean;
-import model.bean.MessageBean;
 import view.ConversationView.ConversationView;
-
-import java.util.List;
+import java.sql.SQLException;
 
 public abstract class ConversationViewDecorator implements ConversationView {
     protected final ConversationView decoratedConversationView;
@@ -14,18 +12,18 @@ public abstract class ConversationViewDecorator implements ConversationView {
     }
 
     @Override
-    public void displayConversations(List<ConversationBean> conversations) {
-        decoratedConversationView.displayConversations(conversations);
+    public void displayConversations() throws SQLException {
+        decoratedConversationView.displayConversations();
     }
 
     @Override
-    public void displayMessages(List<MessageBean> messages) {
-        decoratedConversationView.displayMessages(messages);
+    public void displayMessages(ConversationBean selectedConversation) {
+        decoratedConversationView.displayMessages(selectedConversation);
     }
 
     @Override
-    public void sendMessage(String message) {
-        decoratedConversationView.sendMessage(message);
+    public void sendMessage() {
+        decoratedConversationView.sendMessage();
     }
 
     @Override
@@ -41,11 +39,6 @@ public abstract class ConversationViewDecorator implements ConversationView {
     @Override
     public void showError(String message) {
         decoratedConversationView.showError(message);
-    }
-
-    @Override
-    public void setActionHandler(controller.ActionHandler handler) {
-        decoratedConversationView.setActionHandler(handler);
     }
 
     @Override
@@ -76,11 +69,6 @@ public abstract class ConversationViewDecorator implements ConversationView {
     @Override
     public void back() {
         decoratedConversationView.back();
-    }
-
-    @Override
-    public void resetMessageInput() {
-        decoratedConversationView.resetMessageInput();
     }
 
     @Override

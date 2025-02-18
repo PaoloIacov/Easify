@@ -1,6 +1,5 @@
 package controller;
 
-import controller.exceptions.NullFieldException;
 import model.bean.CredentialsBean;
 import model.bean.ProjectBean;
 import model.bean.UserBean;
@@ -8,284 +7,112 @@ import model.converter.ProjectConverter;
 import model.converter.UserConverter;
 import model.dao.ProjectDAO;
 import model.dao.UserDAO;
-import model.domain.Project;
-import model.domain.User;
 import model.localization.LocalizationManager;
-import view.ProjectView.DecoratedProjectView.CliAdminProjectViewDecorator;
-import view.ProjectView.DecoratedProjectView.GraphicAdminProjectViewDecorator;
-import view.ProjectView.ProjectView;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public class ProjectController implements ActionHandler {
-
-    private final ProjectView projectView;
+public class ProjectController {
     private final ProjectDAO projectDAO;
     private final LocalizationManager localizationManager;
     private final ApplicationController applicationController;
     private final CredentialsBean loggedInUser;
     private final UserDAO userDAO;
-    private static final String GENERIC_ERROR = "error.generic";
-    private static final String INVALID_OPTION = "error.invalid.option";
+    private static final String GENERIC_ERROR  = "generic.error";
 
-    public ProjectController(ProjectView projectView, ProjectDAO projectDAO, LocalizationManager localizationManager, ApplicationController applicationController, CredentialsBean loggedInUser, UserDAO userDAO) {
-        this.projectView = projectView;
+    public ProjectController(ProjectDAO projectDAO, LocalizationManager localizationManager, ApplicationController applicationController, CredentialsBean loggedInUser, UserDAO userDAO) {
         this.projectDAO = projectDAO;
         this.localizationManager = localizationManager;
         this.applicationController = applicationController;
         this.loggedInUser = loggedInUser;
         this.userDAO = userDAO;
-
-        if (projectView.isGraphic()) {
-            projectView.setActionHandler(this);
-        }
     }
 
-    public void start(String username) {
-        if (!projectView.isGraphic()) {
-            runCliLoop();
-        } else {
-            displayProjectsForUser(username);
-            projectView.display();
-
-        }
-    }
-
-    @Override
-    public boolean handleAction(String action) {
+    public List<ProjectBean> getProjectsForUser(String username) {
         try {
-            switch (action) {
-                case "1":
-                    displayProjectsForUser(loggedInUser.getUsername());
-                    break;
-                case "2":
-                    handleAddUserToProject();
-                    break;
-                case "3":
-                    handleRemoveUserFromProject();
-                    break;
-                case "4":
-                    applicationController.back();
-                    return false;
-                case "5": //Admin only
-                    handleAddProject();
-                    displayProjectsForUser(loggedInUser.getUsername());
-                    break;
-                case "6": //Admin only
-                    handleRemoveProject();
-                    break;
-                case "8":
-                    navigateToConversations();
-                    break;
-                case "7":
-                    String projectNameForDetails = projectView.getSelectedProjectName();
-                    String projectDescriptionForDetails = projectView.getSelectedProjectDescription();
-                    if (projectNameForDetails != null) {
-                        handleNavigateToProjectDetails(projectNameForDetails, projectDescriptionForDetails);
-                    }
-                    break;
-                default:
-                    projectView.showError(localizationManager.getText(INVALID_OPTION));
-            }
-        } catch (Exception e) {
-            projectView.showError(GENERIC_ERROR);
-        }
-        return true;
-    }
-
-
-    private void runCliLoop() {
-        while (true) {
-            try {
-                displayProjectsForUser(loggedInUser.getUsername());
-                projectView.display();
-                String action = projectView.getInput("interface.prompt").trim();
-                int choice = Integer.parseInt(action);
-                if (choice < 1 || choice > 5 && loggedInUser.getRole() != 3) {
-                    projectView.showError(INVALID_OPTION);
-                    continue;
-                }
-                switch (action) {
-                    case "4" -> handleAction("8");
-                    case "5" -> handleAction("4");
-                    case "6" -> handleAction("5");
-                    case "7" -> handleAction("6");
-                    default -> handleAction(action);
-                }
-
-            } catch (NumberFormatException e) {
-                projectView.showError(localizationManager.getText(INVALID_OPTION));
-            } catch (Exception e) {
-                projectView.showError(GENERIC_ERROR);
-            }
-        }
-    }
-
-
-    private void displayProjectsForUser(String username) {
-        try {
-            List<ProjectBean> projects = projectDAO.getProjectsForUser(username).stream()
+            return projectDAO.getProjectsForUser(username).stream()
                     .map(ProjectConverter::toBean)
                     .toList();
-            projectView.displayProjects(projects);
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("error.load.projects") + ": " + e.getMessage());
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
+        return List.of();
     }
 
-    private void handleNavigateToProjectDetails(String projectName, String projectDescription) {
-        projectView.navigateToProjectDetails(projectName, projectDescription);
-    }
-
-    private void handleAddUserToProject() {
+    public void addUserToProject(String projectName, String username) {
         try {
-            displayProjectsForUser(loggedInUser.getUsername());
-            String projectName = projectView.getSelectedProjectName();
-            List<User> users = userDAO.getAllUsers();
-            List<String> usernames = users.stream()
-                    .map(User::getUsername)
-                    .toList();
-
-            if (projectName == null) {
-                projectView.showError(localizationManager.getText("project.no.selected"));
-                return;
-            }
-            System.out.println("Usernames: " + usernames);
-            String username = projectView.getInput("project.add.user.prompt.username").trim();
-
-            int userRole = userDAO.getUserRole(username);
-            if (userRole == -1) {
-                projectView.showError(localizationManager.getText("project.add.user.error.not.found"));
-                return;
+            if (userDAO.getUserRole(username) == -1) {
+                throw new IllegalArgumentException(localizationManager.getText("project.add.user.error.not.found"));
             }
 
             if (userDAO.isUserInProject(projectName, username)) {
-                projectView.showError(localizationManager.getText("project.add.user.error.already.in.project"));
-                return;
+                throw new IllegalArgumentException(localizationManager.getText("project.add.user.error.already.in.project"));
             }
+
             projectDAO.addEmployeeToProject(projectName, username);
-            projectView.showSuccess(localizationManager.getText("project.add.user.success"));
-
         } catch (SQLException e) {
-            projectView.showError("user.not.found");
-        } catch (Exception e) {
-            projectView.showError(GENERIC_ERROR);
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
     }
 
-
-    private void handleRemoveUserFromProject() {
+    public void removeUserFromProject(String projectName, String username) {
         try {
-            String projectName = projectView.getSelectedProjectName();
-            if (projectName == null) {
-                projectView.showError(localizationManager.getText("project.no.selected"));
-                return;
-            }
-            List<User> users = projectDAO.getUsersFromProject(projectName);
-            List<UserBean> userBeans = users.stream()
-                    .map(UserConverter::toBean)
-                    .toList();
-            List<String> usernames = userBeans.stream()
-                    .map(UserBean::getUsername)
-                    .toList();
-            if (usernames.isEmpty()) {
-                projectView.showError(localizationManager.getText("project.remove.user.empty"));
-                return;
-            }
-
-            String selectedUsername = projectView.showRemoveUserFromProjectDialog(usernames);
-            if (selectedUsername == null) {
-                return;
-            }
-            projectDAO.removeEmployeeFromProject(projectName, selectedUsername);
-            projectView.showSuccess(localizationManager.getText("project.remove.user.success"));
+            projectDAO.removeEmployeeFromProject(projectName, username);
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("project.remove.user.error") + ": " + e.getMessage());
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
     }
 
-    private void handleAddProject() {
+    public void addProject(String projectName, String description) {
         try {
-            String projectName = projectView.getInput("project.add.prompt.name");
-            String description = projectView.getInput("project.add.prompt.description");
             validateProjectFields(projectName, description);
             projectDAO.addProject(projectName, description);
-            projectView.showSuccess(localizationManager.getText("project.add.success"));
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("project.add.error") + ": " + e.getMessage());
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
     }
 
-    private void handleRemoveProject() {
+    public void removeProject(String projectName) {
         try {
-            List<Project> projects = projectDAO.getAllProjects();
-
-            List<ProjectBean> projectBeans = projects.stream()
-                    .map(ProjectConverter::toBean)
-                    .toList();
-
-            List<String> projectNames = projectBeans.stream()
-                    .map(ProjectBean::getName)
-                    .toList();
-
-            String selectedProjectName;
-            switch (projectView) {
-                case GraphicAdminProjectViewDecorator adminView ->
-                        selectedProjectName = adminView.removeProject(projectNames);
-                case CliAdminProjectViewDecorator adminView ->
-                        selectedProjectName = adminView.removeProject(projectNames);
-                default -> {
-                    projectView.showError(localizationManager.getText("admin.remove.project.not.allowed"));
-                    return;
-                }
-            }
-            if (selectedProjectName == null) {
-                return;
-            }
-
-            ProjectBean projectToDelete = projectBeans.stream()
-                    .filter(p -> p.getName().equals(selectedProjectName))
-                    .findFirst()
-                    .orElse(null);
-
-            if (projectToDelete == null) {
-                projectView.showError(localizationManager.getText("admin.remove.project.error"));
-                return;
-            }
-
-            // Elimina il progetto
-            projectDAO.deleteProject(projectToDelete.getName());
-
-            // ✅ Mostra il messaggio di successo
-            projectView.showSuccess(localizationManager.getText("admin.remove.project.success"));
-
-            // ✅ Refresh della lista progetti
-            List<Project> updatedProjects = projectDAO.getAllProjects();
-            List<ProjectBean> updatedProjectBeans = updatedProjects.stream()
-                    .map(ProjectConverter::toBean)
-                    .toList();
-            projectView.displayProjects(updatedProjectBeans);
-
+            projectDAO.deleteProject(projectName);
         } catch (Exception e) {
-            projectView.showError(localizationManager.getText("admin.remove.project.error") + ": " + e.getMessage());
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
     }
 
-
-    private void navigateToConversations() {
-       try {
-
-            applicationController.navigateToConversation(loggedInUser, projectView.getSelectedProjectName());
+    public void navigateToConversations(String projectName) {
+        try {
+            applicationController.navigateToConversation(loggedInUser, projectName);
         } catch (Exception e) {
-            projectView.showError("Failed to navigate to project view: " + e.getMessage());
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
         }
     }
 
-    private void validateProjectFields(String projectName, String description) throws NullFieldException {
+    public void validateProjectFields(String projectName, String description) {
         if (projectName == null || projectName.isBlank() || description == null || description.isBlank()) {
-            throw new NullFieldException("project.not.null", localizationManager);
+            throw new IllegalArgumentException(localizationManager.getText("project.not.null"));
         }
+    }
+
+    public List<UserBean> getUsersInProject(String projectName) {
+        try {
+            return projectDAO.getUsersFromProject(projectName).stream()
+                    .map(UserConverter::toBean)
+                    .toList();
+        } catch (Exception e) {
+            System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
+        }
+        return List.of();
+    }
+
+    public List<UserBean> getUsersNotInProject(String projectName) {
+        try {
+            return projectDAO.getUsersNotInProject(projectName).stream()
+                    .map(UserConverter::toBean)
+                    .toList();
+        } catch (Exception e) {
+           System.err.println(localizationManager.getText(GENERIC_ERROR) + ": " + e.getMessage());
+        }
+        return List.of();
     }
 }
-

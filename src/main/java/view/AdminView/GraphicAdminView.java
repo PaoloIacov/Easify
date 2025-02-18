@@ -1,6 +1,6 @@
 package view.AdminView;
 
-import controller.ActionHandler;
+import controller.AdminController;
 import model.bean.UserBean;
 import model.localization.LocalizationManager;
 import view.BackgroundPanel;
@@ -9,19 +9,21 @@ import view.PanelUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.List;
 
 public class GraphicAdminView extends JFrame implements AdminView {
 
     private final transient LocalizationManager localizationManager;
-    private transient ActionHandler actionHandler;
+    private final transient AdminController adminController;
     private JPanel userListPanel;
     private BackgroundPanel userInfoPanel;
-    private String selectedUsername;
 
-    public GraphicAdminView(LocalizationManager localizationManager) {
+    public GraphicAdminView(LocalizationManager localizationManager, AdminController adminController) throws SQLException {
         this.localizationManager = localizationManager;
+        this.adminController = adminController;
         initializeUI();
+        displayAllUsers();
     }
 
     private void initializeUI() {
@@ -58,13 +60,13 @@ public class GraphicAdminView extends JFrame implements AdminView {
     private JPanel createUserHeader() {
         JPanel userHeader = PanelUtils.createHeaderPanel();
 
-        JButton addUserButton = createButton(localizationManager.getText("admin.add.user"), "2");
+        JButton addUserButton = createButton(localizationManager.getText("admin.add.user"), this::addUser);
         PanelUtils.addButtonToPanel(userHeader, addUserButton, 0);
 
-        JButton deleteUserButton = createButton(localizationManager.getText("admin.remove.user"), "3");
+        JButton deleteUserButton = createButton(localizationManager.getText("admin.remove.user"), this::removeUser);
         PanelUtils.addButtonToPanel(userHeader, deleteUserButton, 1);
 
-        JButton backButton = createButton(localizationManager.getText("generic.back"), "5");
+        JButton backButton = createButton(localizationManager.getText("generic.back"), this::back);
         PanelUtils.addButtonToPanel(userHeader, backButton, 2);
 
         return userHeader;
@@ -75,17 +77,12 @@ public class GraphicAdminView extends JFrame implements AdminView {
         userInfoPanel.add(createNavigateToProjectsButton());
     }
 
-    private JButton createButton(String text, String actionCommand) {
+    private JButton createButton(String text, Runnable action) {
         JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setPreferredSize(new Dimension(120, 30));
-        button.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction(actionCommand);
-            }
-        });
+        button.addActionListener(e -> action.run());
         return button;
     }
+
 
     public void addUserItem(UserBean user) {
         JPanel userItem = PanelUtils.createStyledPanel();
@@ -95,8 +92,10 @@ public class GraphicAdminView extends JFrame implements AdminView {
         JLabel titleLabel = new JLabel("<html><b>" + user.getUsername() + "</b></html>");
         titleLabel.setForeground(Color.WHITE);
 
-        JButton selectButton = createButton(localizationManager.getText("generic.select"), "6");
-        selectButton.addActionListener(_ -> setSelectedUsername(user.getUsername()));
+        JButton selectButton = createButton(localizationManager.getText("generic.select"), () -> {
+            setSelectedUsername(user.getUsername());
+            displayUserDetails(user);
+        });
 
         userItem.add(titleLabel);
         userItem.add(selectButton);
@@ -108,8 +107,9 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     @Override
-    public void displayAllUsers(List<UserBean> users) {
+    public void displayAllUsers() throws SQLException {
         userListPanel.removeAll();
+        List<UserBean> users = adminController.getAllUsers();
         users.forEach(this::addUserItem);
         refresh();
     }
@@ -174,52 +174,70 @@ public class GraphicAdminView extends JFrame implements AdminView {
         return styledLabel;
     }
 
-
     @Override
-    public UserBean addUser() {
-        String username = JOptionPane.showInputDialog(localizationManager.getText("user.username"));
-        String password = JOptionPane.showInputDialog(localizationManager.getText("user.password"));
-        String name = JOptionPane.showInputDialog(localizationManager.getText("user.name"));
-        String surname = JOptionPane.showInputDialog(localizationManager.getText("user.surname"));
-        int role = Integer.parseInt(JOptionPane.showInputDialog(localizationManager.getText("user.role")));
-        return new UserBean(username, password, name, surname, role);
+    public void addUser() {
+        try {
+            String username = JOptionPane.showInputDialog(localizationManager.getText("user.username"));
+            String password = JOptionPane.showInputDialog(localizationManager.getText("user.password"));
+            String name = JOptionPane.showInputDialog(localizationManager.getText("user.name"));
+            String surname = JOptionPane.showInputDialog(localizationManager.getText("user.surname"));
+            int role = Integer.parseInt(JOptionPane.showInputDialog(localizationManager.getText("user.role")));
+
+            UserBean user = new UserBean(username, password, name, surname, role);
+
+            adminController.addUser(user);
+            showSuccess(localizationManager.getText("generic.action.success"));
+            displayAllUsers();
+        } catch (NumberFormatException e) {
+            showError(localizationManager.getText("admin.add.user.invalid.role"));
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
     }
 
+
     @Override
-    public String removeUser(List<String> usernames) {
-        if (usernames.isEmpty()) {
-            showError(localizationManager.getText("admin.remove.no.users"));
-            return null;
+    public void removeUser() {
+        try {
+            List<UserBean> users = adminController.getAllUsers();
+            List<String> usernames = users.stream().map(UserBean::getUsername).toList();
+
+            if (usernames.isEmpty()) {
+                showError(localizationManager.getText("admin.remove.no.users"));
+                return;
+            }
+
+            JComboBox<String> userDropdown = new JComboBox<>(usernames.toArray(new String[0]));
+
+            JPanel panel = new JPanel(new GridLayout(0, 1));
+            panel.add(new JLabel(localizationManager.getText("admin.remove.user.prompt")));
+            panel.add(userDropdown);
+
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    panel,
+                    localizationManager.getText("admin.remove.user.title"),
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (result == JOptionPane.OK_OPTION) {
+                String selectedUser = (String) userDropdown.getSelectedItem();
+                if (selectedUser != null) {
+                    adminController.removeUser(selectedUser);
+                    showSuccess(localizationManager.getText("generic.action.success"));
+                    displayAllUsers();
+                }
+            }
+        } catch (SQLException e) {
+            showError(localizationManager.getText("admin.remove.error") + ": " + e.getMessage());
         }
-
-        JComboBox<String> userDropdown = new JComboBox<>(usernames.toArray(new String[0]));
-
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel(localizationManager.getText("admin.remove.user.prompt")));
-        panel.add(userDropdown);
-
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
-                localizationManager.getText("admin.remove.user.title"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
-        if (result == JOptionPane.OK_OPTION) {
-            return (String) userDropdown.getSelectedItem();
-        }
-
-        return null;
     }
+
 
     @Override
     public String getInput(String promptKey) {
         return JOptionPane.showInputDialog(this, localizationManager.getText(promptKey));
-    }
-
-    @Override
-    public void setActionHandler(ActionHandler handler) {
-        this.actionHandler = handler;
     }
 
     @Override
@@ -250,16 +268,10 @@ public class GraphicAdminView extends JFrame implements AdminView {
 
     @Override
     public void back() {
-        dispose();
-    }
-
-    @Override
-    public String getSelectedUsername() {
-        return selectedUsername;
+        adminController.back();
     }
 
     public void setSelectedUsername(String username) {
-        this.selectedUsername = username;
 
         userInfoPanel.removeAll();
         if (username != null && !username.isEmpty()) {
@@ -271,14 +283,10 @@ public class GraphicAdminView extends JFrame implements AdminView {
     }
 
     public JButton createNavigateToProjectsButton() {
-        JButton navigateToProjectsButton = new JButton(localizationManager.getText("admin.menu.navigate.project"));
+        JButton navigateToProjectsButton = createButton(localizationManager.getText("admin.menu.navigate.project"), adminController::navigateToProjectView);
         navigateToProjectsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         navigateToProjectsButton.setPreferredSize(new Dimension(200, 40));
-
         navigateToProjectsButton.addActionListener(_ -> {
-            if (actionHandler != null) {
-                actionHandler.handleAction("4");
-            }
         });
 
         return navigateToProjectsButton;

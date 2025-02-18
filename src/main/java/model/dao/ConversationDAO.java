@@ -127,8 +127,8 @@ public class ConversationDAO {
                 "WHERE u.username NOT IN ( " +
                 "    SELECT cp.participant " +
                 "    FROM ConversationParticipation cp " +
-                "    WHERE cp.conversationId = ? " +
-                ")";
+                "    WHERE cp.conversationId = ?" +
+                ") AND u.role = 1";
 
         return executeUserQuery(query, conversationId);
     }

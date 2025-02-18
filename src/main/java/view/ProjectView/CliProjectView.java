@@ -1,87 +1,182 @@
 package view.ProjectView;
 
-import controller.ActionHandler;
+import controller.ProjectController;
+import model.bean.CredentialsBean;
 import model.bean.ProjectBean;
+import model.bean.UserBean;
 import model.localization.LocalizationManager;
-import view.GeneralUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class CliProjectView implements ProjectView {
     private final LocalizationManager localizationManager;
+    private final ProjectController projectController;
+    private final CredentialsBean loggedInUser;
     private final Scanner scanner;
-    private List<ProjectBean> projectList;
-    private static final String PROJECT_LIST_EMPTY = "project.list.empty";
-    private static final String INVALID_SELECTION = "error.invalid.selection";
+    private String selectedProjectName;
+    private static final String INVALID_OPTION = "error.invalid.option";
 
-    public CliProjectView(LocalizationManager localizationManager) {
+    public CliProjectView(LocalizationManager localizationManager, ProjectController projectController, CredentialsBean loggedInUser) {
         this.localizationManager = localizationManager;
+        this.projectController = projectController;
+        this.loggedInUser = loggedInUser;
         this.scanner = new Scanner(System.in);
-        this.projectList = new ArrayList<>();
     }
 
     @Override
     public void display() {
-        System.out.println(localizationManager.getText("project.menu.title"));
-        System.out.println(localizationManager.getText("project.menu.options"));
+        boolean running = true;
+
+        while (running) {  // 🔹 Mantiene la CLI attiva finché l'utente non sceglie "Indietro"
+            System.out.println("\n=== " + localizationManager.getText("project.menu.title") + " ===");
+            System.out.println(localizationManager.getText("project.menu.options"));
+
+            System.out.print(localizationManager.getText("interface.prompt"));
+            String action = scanner.nextLine().trim();
+
+            switch (action) {
+                case "1" -> displayProjects();
+                case "2" -> addUserToProject();
+                case "3" -> removeUserFromProject();
+                case "4" -> projectController.navigateToConversations(selectedProjectName);
+                case "5" -> running = false;  // 🔹 Esce dal loop e torna alla vista precedente
+                default -> showError(localizationManager.getText(INVALID_OPTION));
+            }
+        }
     }
 
-    @Override
-    public void close() {
-        System.out.println(localizationManager.getText("view.close"));
-    }
 
     @Override
-    public void refresh() {
-        System.out.println(localizationManager.getText("view.refresh"));
-    }
-
-    @Override
-    public void back() {
-        System.out.println(localizationManager.getText("view.back"));
-    }
-
-    @Override
-    public String getInput(String promptKey) {
-        System.out.print(localizationManager.getText(promptKey));
-        return scanner.nextLine().trim();
-    }
-
-    @Override
-    public boolean isGraphic() {
-        return false;
-    }
-
-    @Override
-    public void displayProjects(List<ProjectBean> projects) {
-        projectList = new ArrayList<>(projects);
-        System.out.println("\n" + localizationManager.getText("project.list.title"));
-
-        if (projects.isEmpty()) {
-            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
-        } else {
+    public void displayProjects() {
+        try {
+            List<ProjectBean> projects = projectController.getProjectsForUser(loggedInUser.getUsername());
+            if (projects.isEmpty()) {
+                showError(localizationManager.getText("project.list.empty"));
+                return;
+            }
+            System.out.println(localizationManager.getText("project.list.title"));
             int index = 1;
             for (ProjectBean project : projects) {
-                System.out.println("--------------------------------------------------");
-                System.out.println("[" + index + "] " + project.getName());
-                System.out.println("  " + localizationManager.getText("project.description") + ": " + project.getDescription());
-                System.out.println("--------------------------------------------------");
+                System.out.println("[" + index + "] " + project.getName() + " - " + project.getDescription());
                 index++;
             }
+            System.out.print("\n" + localizationManager.getText("project.select.prompt") + ": ");
+            int choice = Integer.parseInt(scanner.nextLine().trim()) - 1;
+
+            if (choice < 0 || choice >= projects.size()) {
+                showError(localizationManager.getText(INVALID_OPTION));
+                return;
+            }
+
+            selectedProjectName = projects.get(choice).getName();
+            System.out.println(selectedProjectName);
+
+        } catch (NumberFormatException e) {
+            showError(localizationManager.getText(INVALID_OPTION));
+        }
+    }
+
+    @Override
+    public void addUserToProject() {
+        if (selectedProjectName == null) {
+            showError(localizationManager.getText("project.no.selected"));
+            return;
+        }
+
+        try {
+            // Retrieve users not already in the project
+            List<UserBean> availableUsers = projectController.getUsersNotInProject(selectedProjectName);
+
+            if (availableUsers.isEmpty()) {
+                showError(localizationManager.getText("project.add.user.error.no.available"));
+                return;
+            }
+
+            // Display list of users
+            System.out.println("\n" + localizationManager.getText("project.add.user.prompt.available"));
+            for (int i = 0; i < availableUsers.size(); i++) {
+                System.out.println((i + 1) + " - " + availableUsers.get(i).getUsername());
+            }
+
+            // Prompt user to select an index
+            System.out.print(localizationManager.getText("conversation.add.user.select") + ": ");
+            int choice = Integer.parseInt(scanner.nextLine().trim()) - 1;
+
+            // Validate selection
+            if (choice < 0 || choice >= availableUsers.size()) {
+                showError(localizationManager.getText(INVALID_OPTION));
+                return;
+            }
+
+            // Get selected username and add user to project
+            String selectedUsername = availableUsers.get(choice).getUsername();
+            projectController.addUserToProject(selectedProjectName, selectedUsername);
+            showSuccess(localizationManager.getText("project.add.user.success"));
+
+        } catch (NumberFormatException e) {
+            showError(localizationManager.getText(INVALID_OPTION));
+        } catch (RuntimeException e) {
+            showError(e.getMessage());
+        }
+    }
+
+
+    @Override
+    public void removeUserFromProject() {
+        if (selectedProjectName == null) {
+            showError(localizationManager.getText("project.no.selected"));
+            return;
+        }
+
+        try {
+            List<String> usernames = projectController.getUsersInProject(selectedProjectName)
+                    .stream()
+                    .map(UserBean::getUsername)
+                    .toList();
+
+            if (usernames.isEmpty()) {
+                showError(localizationManager.getText("project.remove.user.empty"));
+                return;
+            }
+
+            String selectedUsername = showRemoveUserFromProjectDialog(usernames);
+
+            if (selectedUsername != null) {
+                projectController.removeUserFromProject(selectedProjectName, selectedUsername);
+                showSuccess(localizationManager.getText("project.remove.user.success"));
+            }
+
+        } catch (RuntimeException e) {
+            showError(e.getMessage());
         }
     }
 
     @Override
     public String showRemoveUserFromProjectDialog(List<String> usernames) {
         System.out.println(localizationManager.getText("admin.remove.user.prompt"));
-        GeneralUtils.printList(usernames, null);
+        for (int i = 0; i < usernames.size(); i++) {
+            System.out.println((i + 1) + " - " + usernames.get(i));
+        }
         System.out.print(localizationManager.getText("admin.remove.user.select") + ": ");
 
-        return GeneralUtils.selectUsername(scanner, usernames, localizationManager.getText("admin.input.invalid"));
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim()) - 1;
+            if (choice < 0 || choice >= usernames.size()) {
+                showError(localizationManager.getText(INVALID_OPTION));
+                return null;
+            }
+            return usernames.get(choice);
+        } catch (NumberFormatException e) {
+            showError(localizationManager.getText(INVALID_OPTION));
+            return null;
+        }
     }
 
+    public void navigateToConversations() {
+
+        projectController.navigateToConversations(selectedProjectName);
+    }
 
     @Override
     public void navigateToProjectDetails(String projectName, String projectDescription) {
@@ -95,75 +190,32 @@ public class CliProjectView implements ProjectView {
 
     @Override
     public void showError(String message) {
-        System.err.println(localizationManager.getText(message));
+        System.err.println(localizationManager.getText("error.title") + ": " + message);
     }
 
     @Override
-    public void addUserToProject(String projectName, String username) {
-        System.out.println(localizationManager.getText("project.user.added") + ": " + username + " -> " + projectName);
+    public String getInput(String promptKey) {
+        System.out.print(localizationManager.getText(promptKey) + ": ");
+        return scanner.nextLine().trim();
     }
 
     @Override
-    public void removeUserFromProject(String projectName, String username) {
-        System.out.println(localizationManager.getText("project.user.removed") + ": " + username + " -> " + projectName);
+    public void close() {
+        System.out.println(localizationManager.getText("view.close"));
     }
 
     @Override
-    public void setActionHandler(ActionHandler handler) {
-        throw new UnsupportedOperationException("CLI does not support action handlers.");
+    public void refresh() {
+        displayProjects();
     }
 
     @Override
-    public String getSelectedProjectName() {
-        if (projectList.isEmpty()) {
-            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
-            return null;
-        }
-
-        System.out.print(localizationManager.getText("project.select.prompt") + ": ");
-        try {
-            int selectedIndex = Integer.parseInt(scanner.nextLine().trim());
-            if (!isValidIndex(selectedIndex, projectList.size(), INVALID_SELECTION, localizationManager)) {
-                return null;
-            }
-
-            return projectList.get(selectedIndex - 1).getName();
-
-        } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText(INVALID_SELECTION));
-            return null;
-        }
+    public void back() {
+        close();
     }
-
 
     @Override
-    public String getSelectedProjectDescription() {
-        if (projectList.isEmpty()) {
-            System.out.println(localizationManager.getText(PROJECT_LIST_EMPTY));
-            return null;
-        }
-
-        int choice;
-        try {
-            choice = Integer.parseInt(scanner.nextLine().trim());
-            if (!isValidIndex(choice, projectList.size(), INVALID_SELECTION, localizationManager)) {
-                return null;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(localizationManager.getText(INVALID_SELECTION));
-            return null;
-        }
-
-        String selectedProjectDescription = projectList.get(choice - 1).getDescription();
-        System.out.println(localizationManager.getText("project.selected") + ": " + selectedProjectDescription);
-        return selectedProjectDescription;
-    }
-
-    public static boolean isValidIndex(int index, int listSize, String errorMessage, LocalizationManager localizationManager) {
-        if (index < 1 || index > listSize) {
-            System.out.println(localizationManager.getText(errorMessage));
-            return false;
-        }
-        return true;
+    public boolean isGraphic() {
+        return false;
     }
 }

@@ -1,7 +1,5 @@
 package view.ProjectView.DecoratedProjectView;
 
-import controller.ActionHandler;
-import model.bean.ProjectBean;
 import view.ProjectView.ProjectView;
 
 import java.util.List;
@@ -14,8 +12,8 @@ public abstract class ProjectViewDecorator implements ProjectView {
     }
 
     @Override
-    public void displayProjects(List<ProjectBean> projects) {
-        decoratedProjectView.displayProjects(projects);
+    public void displayProjects() {
+        decoratedProjectView.displayProjects();
     }
 
     @Override
@@ -36,11 +34,6 @@ public abstract class ProjectViewDecorator implements ProjectView {
     @Override
     public boolean isGraphic() {
         return decoratedProjectView.isGraphic();
-    }
-
-    @Override
-    public void setActionHandler(ActionHandler handler) {
-        decoratedProjectView.setActionHandler(handler);
     }
 
     @Override
@@ -74,22 +67,13 @@ public abstract class ProjectViewDecorator implements ProjectView {
     }
 
     @Override
-    public void addUserToProject(String projectName, String username) {
-        decoratedProjectView.addUserToProject(projectName, username);
+    public void addUserToProject() {
+        decoratedProjectView.addUserToProject();
     }
 
-    @Override
-    public String getSelectedProjectName() {
-        return decoratedProjectView.getSelectedProjectName();
-    }
 
     @Override
-    public String getSelectedProjectDescription() {
-        return decoratedProjectView.getSelectedProjectDescription();
-    }
-
-    @Override
-    public void removeUserFromProject(String projectName, String username) {
-        decoratedProjectView.removeUserFromProject(projectName, username);
+    public void removeUserFromProject() {
+        decoratedProjectView.removeUserFromProject();
     }
 }
