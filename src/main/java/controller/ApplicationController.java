@@ -6,12 +6,9 @@ import model.dao.LoginDAO.DbmsLoginDAO;
 import model.dao.MessageDAO;
 import model.dao.UserDAO;
 import model.localization.LocalizationManager;
-import view.AdminView.*;
-import view.ConversationView.*;
-import view.ConversationView.DecoratedConversationView.*;
-import view.LoginView.*;
-import view.ProjectView.*;
-import view.ProjectView.DecoratedProjectView.*;
+import view.Factory.CliViewFactory;
+import view.Factory.GraphicViewFactory;
+import view.Factory.ViewFactory;
 import view.View;
 
 import java.sql.Connection;
@@ -24,8 +21,11 @@ public class ApplicationController {
     private final Connection connection;
     private final LocalizationManager localizationManager;
     private final Stack<View> viewStack = new Stack<>();
-    private String currentInterface = "CLI";
+    private ViewFactory viewFactory;
+
     private static final String GRAPHIC = "Graphic";
+    private String currentInterface = "CLI";
+
     public ApplicationController(Connection connection, LocalizationManager localizationManager) {
         this.connection = connection;
         this.localizationManager = localizationManager;
@@ -33,6 +33,7 @@ public class ApplicationController {
 
     public void start() {
         chooseInterface();
+        viewFactory = currentInterface.equals(GRAPHIC) ? new GraphicViewFactory(localizationManager) : new CliViewFactory(localizationManager);
         navigateToLogin();
     }
 
@@ -57,104 +58,40 @@ public class ApplicationController {
     }
 
     public void navigateToLogin() {
-        LoginView loginView;
-        LoginController loginController = new LoginController(
-                new DbmsLoginDAO(connection),
-                new UserDAO(connection),
-                this
-        );
-
-        if (currentInterface.equals(GRAPHIC)) {
-            loginView = new GraphicLoginView(localizationManager, loginController);
-        } else {
-            loginView = new CliLoginView(localizationManager, loginController);
-        }
-        loginView.display();
+        LoginController loginController = new LoginController(new DbmsLoginDAO(connection), new UserDAO(connection), this);
+        View loginView = viewFactory.createLoginView(loginController);
         viewStack.push(loginView);
+        loginView.display();
     }
 
     public void handleRoleBasedNavigation(CredentialsBean loggedInUser) throws SQLException {
-        if (loggedInUser == null) {
-            System.out.println(localizationManager.getText("login.failed"));
-            navigateToLogin();
-            return;
-        }
-
         switch (loggedInUser.getRole()) {
             case 1 -> navigateToConversation(loggedInUser, null);
             case 2 -> navigateToProject(loggedInUser);
             case 3 -> navigateToAdmin(loggedInUser);
-            default -> {
-                System.out.println(localizationManager.getText("role.unknownRole"));
-                navigateToLogin();
-            }
+            default -> System.out.println("Invalid role");
         }
     }
 
     public void navigateToAdmin(CredentialsBean loggedInUser) throws SQLException {
-        AdminView adminView;
         AdminController adminController = new AdminController(connection, this, localizationManager, loggedInUser);
-
-        if (currentInterface.equals(GRAPHIC)) {
-            adminView = new GraphicAdminView(localizationManager, adminController);
-        } else {
-            adminView = new CliAdminView(localizationManager, adminController);
-        }
-        adminView.display();
+        View adminView = viewFactory.createAdminView(adminController);
         viewStack.push(adminView);
+        adminView.display();
     }
 
     public void navigateToProject(CredentialsBean loggedInUser) {
-        ProjectView projectView;
-
-        ProjectController projectController = new ProjectController(
-                new ProjectDAO(connection),
-                localizationManager,
-                this,
-                loggedInUser,
-                new UserDAO(connection)
-        );
-
-        if (currentInterface.equals(GRAPHIC)) {
-            projectView = loggedInUser.getRole() == 3
-                    ? new GraphicAdminProjectViewDecorator(new GraphicProjectView(localizationManager, projectController, loggedInUser, this), localizationManager, projectController, loggedInUser)
-                    : new GraphicProjectView(localizationManager, projectController, loggedInUser, this);
-        } else {
-            projectView = loggedInUser.getRole() == 3
-                    ? new CliAdminProjectViewDecorator(new CliProjectView(localizationManager, projectController, loggedInUser), localizationManager)
-                    : new CliProjectView(localizationManager, projectController, loggedInUser);
-        }
-
-        projectView.display();
+        ProjectController projectController = new ProjectController(new ProjectDAO(connection), localizationManager, this, loggedInUser, new UserDAO(connection));
+        View projectView = viewFactory.createProjectView(projectController, loggedInUser);
         viewStack.push(projectView);
-        System.out.println("Using ProjectView: " + projectView.getClass().getSimpleName());
+        projectView.display();
     }
 
     public void navigateToConversation(CredentialsBean loggedInUser, String projectName) {
-        ConversationView conversationView;
-
-        ConversationController conversationController = new ConversationController(
-                new ConversationDAO(connection),
-                new MessageDAO(connection),
-                localizationManager,
-                loggedInUser,
-                this,
-                projectName
-        );
-
-        if (currentInterface.equals(GRAPHIC)) {
-            conversationView = projectName != null
-                    ? new GraphicPmConversationViewDecorator(new GraphicConversationView(localizationManager, conversationController), localizationManager, conversationController)
-                    : new GraphicConversationView(localizationManager, conversationController);
-        } else {
-            conversationView = projectName != null
-                    ? new CliPmConversationViewDecorator(new CliConversationView(localizationManager, conversationController), localizationManager)
-                    : new CliConversationView(localizationManager, conversationController);
-        }
-
-
-
+        ConversationController conversationController = new ConversationController(new ConversationDAO(connection), new MessageDAO(connection), localizationManager, loggedInUser, this, projectName);
+        View conversationView = viewFactory.createConversationView(conversationController, projectName);
         viewStack.push(conversationView);
+        conversationView.display();
     }
 
     public void back() {

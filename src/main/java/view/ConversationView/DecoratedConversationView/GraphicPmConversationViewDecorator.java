@@ -171,11 +171,13 @@ public class GraphicPmConversationViewDecorator extends ConversationViewDecorato
                 conversationController.addConversation(description);
                 displayConversations();
             }
+            displayConversations();
         } catch (NullFieldException e) {
             showError(localizationManager.getText("conversation.add.error"));
         } catch (SQLException e) {
             showError(localizationManager.getText(GENERIC_ERROR));
         }
+
     }
 
     private void removeConversation() {

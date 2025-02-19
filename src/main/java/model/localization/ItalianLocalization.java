@@ -125,6 +125,7 @@ public class ItalianLocalization implements Localization {
         translations.put("project.select.prompt", "Seleziona l'indice di un progetto");
         translations.put("project.details.view", "\nProgetto");
         translations.put("project.add.user.error.already.in.project", "L'utente è già presente nel progetto");
+        translations.put("project.add.user.error.no.available", "Nessun utente disponibile per l'aggiunta al progetto");
 
 
         // Admin Project
